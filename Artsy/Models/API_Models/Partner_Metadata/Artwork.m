@@ -1,5 +1,7 @@
 #import "ARValueTransformer.h"
 #import "ARSpotlight.h"
+#import "EditionSet.h"
+
 
 @implementation Artwork {
     // If we give these as properties they can cause
@@ -70,12 +72,17 @@
 
 + (NSValueTransformer *)artistJSONTransformer
 {
-    return [MTLValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[Artist class]];
+    return [MTLValueTransformer mtl_JSONDictionaryTransformerWithModelClass:Artist.class];
 }
 
 + (NSValueTransformer *)partnerJSONTransformer
 {
-    return [MTLValueTransformer mtl_JSONDictionaryTransformerWithModelClass:[Partner class]];
+    return [MTLValueTransformer mtl_JSONDictionaryTransformerWithModelClass:Partner.class];
+}
+
++ (NSValueTransformer *)editionSetsJSONTransformer
+{
+    return [MTLValueTransformer mtl_JSONArrayTransformerWithModelClass:EditionSet.class];
 }
 
 + (NSValueTransformer *)defaultImageJSONTransformer

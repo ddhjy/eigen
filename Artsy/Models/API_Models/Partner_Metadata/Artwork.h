@@ -11,7 +11,7 @@
 
 // TODO: Add support ARFollowable for following status
 
-@class Artist, Partner, Profile, Sale, Fair, PartnerShow;
+@class Artist, Partner, Profile, Sale, Fair, PartnerShow, EditionSet;
 
 typedef NS_ENUM(NSInteger, ARArtworkAvailability) {
     ARArtworkAvailabilityNotForSale,
@@ -49,9 +49,7 @@ typedef NS_ENUM(NSInteger, ARDimensionMetric) {
 // not a property, carried around for fair context
 - (Fair *)fair;
 
-// we're just gonna leave these as dictionaries for now
-// I think?
-@property (nonatomic, copy) NSArray *editionSets;
+@property (nonatomic, copy, readonly) NSArray<EditionSet *> *editionSets;
 
 @property (nonatomic, assign) enum ARArtworkAvailability availability;
 

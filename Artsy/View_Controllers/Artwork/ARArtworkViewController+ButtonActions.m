@@ -17,6 +17,7 @@
 #import "ARFairMapViewController.h"
 #import "ARBidButton.h"
 #import "ARAnalyticsConstants.h"
+#import "EditionSet.h"
 
 
 @implementation ARArtworkViewController (ButtonActions)
@@ -181,7 +182,7 @@
     // If the artwork has only 1 edition, use that edition id. Otherwise our POST request will fail.
     NSString *editionSetID = nil;
     if (self.artwork.editionSets.count > 0) {
-        editionSetID = [[self.artwork.editionSets objectAtIndex:0] valueForKey:@"id"];
+        editionSetID = [self.artwork.editionSets.firstObject editionSetID];
     }
 
     @weakify(self);
@@ -189,6 +190,7 @@
 
         NSString *orderID = [JSON valueForKey:@"id"];
         NSString *resumeToken = [JSON valueForKey:@"token"];
+
         ARErrorLog(@"Created order %@", orderID);
         UIViewController *controller = [[ARSwitchBoard sharedInstance] loadOrderUIForID:orderID resumeToken:resumeToken];
         [self.navigationController pushViewController:controller animated:YES];

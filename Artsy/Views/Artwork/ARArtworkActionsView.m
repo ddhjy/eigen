@@ -1,5 +1,6 @@
 #import "ARArtworkActionsView.h"
 #import "ARArtworkPriceView.h"
+#import "ARArtworkEditionsPriceView.h"
 #import "ARArtworkAuctionPriceView.h"
 #import "ARCountdownView.h"
 #import "ARNavigationButtonsViewController.h"
@@ -135,6 +136,8 @@
         }
 
         if ([self showBuyButton]) {
+            if (self.artwork.editionSets.count == 0) {
+            }
             self.priceView = [[ARArtworkPriceView alloc] initWithFrame:CGRectZero];
             [self.priceView updatePriceWithArtwork:self.artwork andSaleArtwork:self.saleArtwork];
             [self addSubview:self.priceView withTopMargin:@"4" sideMargin:@"0"];
@@ -165,6 +168,12 @@
             }
 
             [self addSubview:self.priceView withTopMargin:@"4" sideMargin:@"0"];
+        }
+
+        if ([self shouldShowMultipleEditions]) {
+            ARArtworkEditionsPriceView *editionsView = [[ARArtworkEditionsPriceView alloc] init];
+            [editionsView updateWithArtwork:self.artwork];
+            [self addSubview:editionsView withTopMargin:@"4" sideMargin:@"0"];
         }
 
         if ([self showBuyButton]) {
@@ -335,31 +344,29 @@ return [navigationButtons copy];
 
 #pragma mark - Info Logic
 
+- (BOOL)shouldShowMultipleEditions
+{
+    return self.artwork.hasMultipleEditions;
+}
+
 - (BOOL)showNotForSaleLabel
 {
-    return self.artwork.inquireable.boolValue
-           && !self.artwork.sold.boolValue
-           && !self.artwork.forSale.boolValue;
+    return self.artwork.inquireable.boolValue && !self.artwork.sold.boolValue && !self.artwork.forSale.boolValue;
 }
 
 - (BOOL)showPriceLabel
 {
-    return self.artwork.price.length
-           && !self.artwork.hasMultipleEditions
-           && (self.artwork.inquireable.boolValue || self.artwork.sold.boolValue);
+    return self.artwork.price.length && !self.artwork.hasMultipleEditions && (self.artwork.inquireable.boolValue || self.artwork.sold.boolValue);
 }
 
 - (BOOL)showContactForPrice
 {
-    return self.artwork.availability == ARArtworkAvailabilityForSale
-           && self.artwork.isPriceHidden.boolValue;
+    return self.artwork.availability == ARArtworkAvailabilityForSale && self.artwork.isPriceHidden.boolValue;
 }
 
 - (BOOL)showContactButton
 {
-    return self.artwork.forSale.boolValue
-           && !self.artwork.acquireable.boolValue
-           && ![self showAuctionControls];
+    return self.artwork.forSale.boolValue && !self.artwork.acquireable.boolValue && ![self showAuctionControls];
 }
 
 - (BOOL)showBuyButton
