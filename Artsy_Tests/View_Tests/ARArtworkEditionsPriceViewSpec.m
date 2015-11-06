@@ -28,6 +28,7 @@ it(@"handles multiple editions", ^{
             },
         }]
     }];
+
     sut = [[ARArtworkEditionsPriceView alloc] initWithFrame:CGRectMake(0, 0, 320, 60)];
     [sut updateWithArtwork:artwork];
     [sut sizeToFit];

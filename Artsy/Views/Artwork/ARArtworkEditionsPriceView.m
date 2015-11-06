@@ -7,6 +7,7 @@
 - (void)updateWithArtwork:(Artwork *)artwork
 {
     [artwork.editionSets each:^(EditionSet *set) {
+        
         UILabel *label = [[ARSerifLabel alloc] initWithFrame:CGRectZero];
         label.text = set.dimensionsInches;
 

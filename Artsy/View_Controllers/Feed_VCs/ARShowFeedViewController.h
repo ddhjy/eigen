@@ -13,7 +13,7 @@
 /// Allows the state restoration to set the hero units
 @property (nonatomic, strong) ARHeroUnitsNetworkModel *heroUnitDatasource;
 
-@property (nonatomic, readonly, getter=isSHowingOfflineView) BOOL showingOfflineView;
+@property (nonatomic, readonly, getter=isShowingOfflineView) BOOL showingOfflineView;
 
 - (void)refreshFeedItems;
 @end

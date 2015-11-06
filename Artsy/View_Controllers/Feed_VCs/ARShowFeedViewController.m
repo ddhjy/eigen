@@ -34,7 +34,7 @@ static CGFloat ARFeaturedShowsTitleHeightPhone = 40;
 @property (nonatomic, strong, readwrite) UIView *headerView;
 
 @property (nonatomic, strong) AROfflineView *offlineView;
-@property (nonatomic, readwrite, getter=isSHowingOfflineView) BOOL showingOfflineView;
+@property (nonatomic, readwrite, getter=isShowingOfflineView) BOOL showingOfflineView;
 @property (nonatomic, strong) id networkNotificationObserver;
 
 @end
@@ -126,7 +126,7 @@ static CGFloat ARFeaturedShowsTitleHeightPhone = 40;
 
 - (BOOL)shouldShowActiveNetworkError;
 {
-    return !self.isSHowingOfflineView;
+    return !self.isShowingOfflineView;
 }
 
 #pragma mark - ARMenuAwareViewController
