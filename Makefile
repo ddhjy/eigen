@@ -32,7 +32,7 @@ clean:
 	xcodebuild -workspace $(WORKSPACE) -scheme $(SCHEME) -configuration '$(CONFIGURATION)' clean
 
 test:
-	set -o pipefail && xcodebuild -workspace $(WORKSPACE) -scheme $(SCHEME) -configuration Debug test -sdk iphonesimulator -destination $(DEVICE_HOST) | bundle exec second_curtain | tee $(CIRCLE_ARTIFACTS)/xcode_test_raw.log  | bundle exec xcpretty -c --test --report junit --output $(CIRCLE_TEST_REPORTS)/xcode/results.xml
+	set -o pipefail && xcodebuild -workspace $(WORKSPACE) -scheme $(SCHEME) -configuration Debug test -sdk iphonesimulator -destination $(DEVICE_HOST) -enableCodeCoverage CLANG_ENABLE_TEST_COVERAGE=YES | bundle exec second_curtain | tee $(CIRCLE_ARTIFACTS)/xcode_test_raw.log  | bundle exec xcpretty -c --test --report junit --output $(CIRCLE_TEST_REPORTS)/xcode/results.xml
 
 lint:
 	bundle exec fui --path Artsy find
@@ -123,7 +123,7 @@ beta: BUNDLE_NAME = 'Artsy β'
 beta: NOTIFY = 1
 beta: deploy
 
-synxify: 
+synxify:
 	bundle exec synx --spaces-to-underscores -e "/Documentation" Artsy.xcodeproj
 
 LOCAL_BRANCH = $(shell git rev-parse --abbrev-ref HEAD)
