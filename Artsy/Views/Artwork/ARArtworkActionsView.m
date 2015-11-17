@@ -6,6 +6,7 @@
 #import "ARNavigationButton.h"
 #import "ARAuctionBidderStateLabel.h"
 #import "ARBidButton.h"
+#import "ARSpinner.h"
 
 
 @interface ARArtworkActionsView () <ARCountdownViewDelegate>
@@ -20,11 +21,17 @@
 @property (nonatomic, strong) Artwork *artwork;
 @property (nonatomic, strong) SaleArtwork *saleArtwork;
 @property (nonatomic, strong) ARNavigationButtonsViewController *navigationButtonsVC;
+@property (nonatomic, strong) ARSpinner *spinner;
 
 @end
 
 
 @implementation ARArtworkActionsView
+
+- (void)dealloc;
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 
 - (instancetype)initWithArtwork:(Artwork *)artwork
 {
@@ -42,21 +49,56 @@
 - (void)setDelegate:(id<ARArtworkActionsViewDelegate, ARArtworkActionsViewButtonDelegate>)delegate
 {
     _delegate = delegate;
-   @_weakify(self);
+    @weakify(self);
 
     KSPromise *artworkPromise = [self.artwork onArtworkUpdate:nil failure:nil];
     KSPromise *saleArtworkPromise = [self.artwork onSaleArtworkUpdate:^(SaleArtwork *saleArtwork) {
-        @_strongify(self);
+        @strongify(self);
         self.saleArtwork = saleArtwork;
     } failure:nil];
 
     [[KSPromise when:@[ artworkPromise, saleArtworkPromise ]] then:^id(id value) {
-        @_strongify(self);
+        @strongify(self);
         id returnable = nil;
         [self updateUI];
         return returnable;
     } error:nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(artworkBidUpdated:)
+                                                 name:ARAuctionArtworkBidUpdatedNotification
+                                               object:nil];
 }
+
+- (void)artworkBidUpdated:(NSNotification *)notification;
+{
+    if ([notification.userInfo[ARAuctionArtworkIDKey] isEqualToString:self.artwork.artworkID]) {
+        // First clear the old status so the user is not confronted with out-of-date data, which could be worrisome to
+        // the user if they have just made a bid.
+        self.saleArtwork = nil;
+        for (UIView *subview in self.subviews) {
+            [self removeSubview:subview];
+        }
+        ARSpinner *spinner = [[ARSpinner alloc] initWithFrame:CGRectMake(0, 0, 44, 44)];
+        self.spinner = spinner;
+        [self.spinner constrainHeight:@"100"];
+        [self.spinner fadeInAnimated:ARPerformWorkAsynchronously];
+        [self addSubview:self.spinner withTopMargin:@"0" sideMargin:@"0"];
+
+        // Then fetch the up-to-date data.
+        @weakify(self);
+        [self.artwork onSaleArtworkUpdate:^(SaleArtwork *saleArtwork) {
+            @strongify(self);
+            self.saleArtwork = saleArtwork;
+            [self updateUI];
+            self.spinner = nil;
+        } failure:nil allowCached:NO];
+    }
+}
+
+// The central state for a lot of this logic is in:
+// https://docs.google.com/document/d/1kQSHhCiFWxfVkSeql3GQA7UbBbhpNe-UyQ-c6q95Uq0/
+//
 
 - (void)updateUI
 {
@@ -65,7 +107,6 @@
     }
 
     NSMutableArray *buttonsWhoseMarginCanChange = [NSMutableArray array];
-
 
     if ([self showAuctionControls]) {
         ARAuctionState state = self.saleArtwork.auctionState;
@@ -95,7 +136,7 @@
 
         if ([self showBuyButton]) {
             self.priceView = [[ARArtworkPriceView alloc] initWithFrame:CGRectZero];
-            [self.priceView updateWithArtwork:self.artwork andSaleArtwork:self.saleArtwork];
+            [self.priceView updatePriceWithArtwork:self.artwork andSaleArtwork:self.saleArtwork];
             [self addSubview:self.priceView withTopMargin:@"4" sideMargin:@"0"];
 
             ARBlackFlatButton *buy = [[ARBlackFlatButton alloc] init];
@@ -107,9 +148,22 @@
         [self setupCountdownView];
 
     } else {
-        if ([self showPriceLabel] || [self showNotForSaleLabel]) {
+        // No auction controls
+
+        if ([self showPriceLabel] || [self showNotForSaleLabel] || [self showContactForPrice]) {
             self.priceView = [[ARArtworkPriceView alloc] initWithFrame:CGRectZero];
-            [self.priceView updateWithArtwork:self.artwork andSaleArtwork:self.saleArtwork];
+
+            if ([self showNotForSaleLabel]) {
+                [self.priceView addNotForSaleLabel];
+            }
+
+            if ([self showContactForPrice]) {
+                [self.priceView addContactForPrice];
+
+            } else if ([self showPriceLabel]) {
+                [self.priceView updatePriceWithArtwork:self.artwork andSaleArtwork:self.saleArtwork];
+            }
+
             [self addSubview:self.priceView withTopMargin:@"4" sideMargin:@"0"];
         }
 
@@ -240,28 +294,32 @@
     NSMutableArray *navigationButtons = [[NSMutableArray alloc] init];
 
     if ([self showAuctionResultsButton]) {
-        [navigationButtons addObject:@{
-            ARNavigationButtonClassKey: ARNavigationButton.class,
-            ARNavigationButtonPropertiesKey: @{
-                @keypath(ARNavigationButton.new, title): @"Auction Results"
+        NSDictionary *results = @{
+            ARNavigationButtonClassKey : ARNavigationButton.class,
+            ARNavigationButtonPropertiesKey : @{
+                @keypath(ARNavigationButton.new, title) : @"Auction Results"
             },
-            ARNavigationButtonHandlerKey: ^(UIButton *sender) {
-                // This will pass the message up the responder chain
-                [self.delegate tappedAuctionResults];
+            ARNavigationButtonHandlerKey : ^(UIButton *sender){
+                    // This will pass the message up the responder chain
+                    [self.delegate tappedAuctionResults];
     }
-}];
+};
+[navigationButtons addObject:results];
 }
 if ([self showMoreInfoButton]) {
-        [navigationButtons addObject:@{
-            ARNavigationButtonClassKey: ARNavigationButton.class,
-            ARNavigationButtonPropertiesKey: @{
-                    @keypath(ARNavigationButton.new, title): @"More Info"
-                },
-            ARNavigationButtonHandlerKey: ^(UIButton *sender) {
+    NSDictionary *moreInfo = @{
+        ARNavigationButtonClassKey : ARNavigationButton.class,
+        ARNavigationButtonPropertiesKey : @{
+            @keypath(ARNavigationButton.new, title) : @"More Info"
+        },
+        ARNavigationButtonHandlerKey : ^(UIButton *sender){
                 // This will pass the message up the responder chain
                 [self.delegate tappedMoreInfo];
 }
-}];
+}
+;
+
+[navigationButtons addObject:moreInfo];
 }
 return [navigationButtons copy];
 }
@@ -272,21 +330,36 @@ return [navigationButtons copy];
     [self.inquireWithArtsyButton setEnabled:enabled animated:YES];
 }
 
+// Wonder where all this logic comes from?
+// See: https://docs.google.com/document/d/1kQSHhCiFWxfVkSeql3GQA7UbBbhpNe-UyQ-c6q95Uq0
+
 #pragma mark - Info Logic
 
 - (BOOL)showNotForSaleLabel
 {
-    return self.artwork.inquireable.boolValue && self.artwork.sold.boolValue && !self.artwork.forSale.boolValue;
+    return self.artwork.inquireable.boolValue
+           && !self.artwork.sold.boolValue
+           && !self.artwork.forSale.boolValue;
 }
 
 - (BOOL)showPriceLabel
 {
-    return self.artwork.price.length && !self.artwork.hasMultipleEditions && (self.artwork.inquireable.boolValue || self.artwork.sold.boolValue);
+    return self.artwork.price.length
+           && !self.artwork.hasMultipleEditions
+           && (self.artwork.inquireable.boolValue || self.artwork.sold.boolValue);
+}
+
+- (BOOL)showContactForPrice
+{
+    return self.artwork.availability == ARArtworkAvailabilityForSale
+           && self.artwork.isPriceHidden.boolValue;
 }
 
 - (BOOL)showContactButton
 {
-    return self.artwork.forSale.boolValue && !self.artwork.acquireable.boolValue && ![self showAuctionControls];
+    return self.artwork.forSale.boolValue
+           && !self.artwork.acquireable.boolValue
+           && ![self showAuctionControls];
 }
 
 - (BOOL)showBuyButton
@@ -303,7 +376,6 @@ return [navigationButtons copy];
 {
     return (self.saleArtwork != nil) && !self.artwork.sold.boolValue;
 }
-
 
 - (BOOL)showConditionsOfSale
 {

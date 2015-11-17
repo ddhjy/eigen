@@ -1,4 +1,4 @@
-## 2.2.0 (2015.8.21)
+### 2.4.0
 
 * Change onboarding callback to use a block rather then a delegate message. - 1aurabrown
 * Migrated to frameworks under the hood. This is a massive change to a lot
@@ -31,3 +31,6 @@
 * Add a warning message when creating account if password too short or email doesn't validate - jorystiefel
 * Convert to AFNEtworking 2.0
 * Fix FLKAutoLayout issues with top and bottom layout guides. - alloy
+* Caches website content from martsy/force, vastly speeding up hybrid pages - orta
+* Layout fixes for the Auction Results for an Artwork - orta
+* Total Re-write for the show feed - orta

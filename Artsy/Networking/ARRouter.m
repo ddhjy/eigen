@@ -63,7 +63,7 @@ static NSSet *artsyHosts = nil;
                     [[NSNotificationCenter defaultCenter] postNotificationName:ARNetworkAvailableNotification object:nil];
                     break;
             }
-        }];
+    }];
 
     // Ensure the keychain is empty incase you've uninstalled and cleared user data
     // but make sure that this is not a slip-up due to background fetch downloading
@@ -91,13 +91,16 @@ static NSSet *artsyHosts = nil;
     NSString *version = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
     NSString *build = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
 
-    // Take the default from AFNetworking, and extend them all to include code names
-    // and individual build numbers
+    // Take the default from AFNetworking, and extend them all to include:
+    // * code names
+    // * version information
+    // * include big browser engine names so that scripts like that of fast.fonts.net WKWebView will load
 
     AFHTTPRequestSerializer *serializer = [[AFHTTPRequestSerializer alloc] init];
     NSString *userAgent = serializer.HTTPRequestHeaders[@"User-Agent"];
-    NSString *agentString = [NSString stringWithFormat:@"Artsy-Mobile/%@ Eigen/%@", version, build];
+    NSString *agentString = [NSString stringWithFormat:@"Mozilla/5.0 Artsy-Mobile/%@ Eigen/%@", version, build];
     userAgent = [userAgent stringByReplacingOccurrencesOfString:@"Artsy" withString:agentString];
+    userAgent = [userAgent stringByAppendingString:@" AppleWebKit/601.1.46 (KHTML, like Gecko)"];
 
     [[NSUserDefaults standardUserDefaults] registerDefaults:@{ @"UserAgent" : userAgent }];
     [self setHTTPHeader:@"User-Agent" value:userAgent];
@@ -717,8 +720,7 @@ static NSSet *artsyHosts = nil;
 
 + (NSURLRequest *)newFairMapRequestWithFair:(Fair *)fair
 {
-    NSString *url = [NSString stringWithFormat:ARNewFairMapURL];
-    return [self requestWithMethod:@"GET" path:url parameters:@{ @"fair_id" : fair.fairID }];
+    return [self requestWithMethod:@"GET" path:ARNewFairMapURL parameters:@{ @"fair_id" : fair.fairID }];
 }
 
 + (NSURLRequest *)newFollowArtistRequest
@@ -962,5 +964,12 @@ static NSSet *artsyHosts = nil;
     NSAssert(FALSE, @"STUB");
     return [self requestWithMethod:@"GET" path:@"/api/v1/" parameters:nil];
 }
+
++ (NSURLRequest *)newRequestForBlankPage
+{
+    NSURL *pageURL = [[ARRouter baseWebURL] URLByAppendingPathComponent:@"/dev/blank"];
+    return [NSURLRequest requestWithURL:pageURL];
+}
+
 
 @end

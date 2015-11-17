@@ -2,6 +2,7 @@
 
 
 @interface ARFavoritesNetworkModel ()
+@property (readwrite, nonatomic, assign) BOOL allDownloaded;
 @property (readwrite, nonatomic, assign) BOOL downloadLock;
 @property (readwrite, nonatomic, assign) NSInteger currentPage;
 @end
@@ -26,26 +27,26 @@
     }
 
     _downloadLock = YES;
-   @_weakify(self);
+   @weakify(self);
 
     [self performNetworkRequestAtPage:self.currentPage withSuccess:^(NSArray *items) {
-        @_strongify(self);
+        @strongify(self);
         if (!self) { return; }
 
         self.currentPage++;
         self.downloadLock = NO;
 
         if (items.count == 0) {
-            self->_allDownloaded = YES;
+            self.allDownloaded = YES;
         }
 
         if(success) success(items);
 
     } failure:^(NSError *error) {
-        @_strongify(self);
+        @strongify(self);
         if (!self) { return; }
 
-        self->_allDownloaded = YES;
+        self.allDownloaded = YES;
 
         self.downloadLock = NO;
 

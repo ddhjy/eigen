@@ -1,3 +1,7 @@
+#import <ARAnalytics/ARAnalytics.h>
+#import <Adjust/Adjust.h>
+#import <UIAlertView+Blocks/UIAlertView+Blocks.h>
+
 #import "ARArtworkViewController+ButtonActions.h"
 #import "ARZoomArtworkImageViewController.h"
 #import "ARArtworkInfoViewController.h"
@@ -8,11 +12,11 @@
 #import "ARShowViewController.h"
 #import "ARHeartButton.h"
 #import "ARFairViewController.h"
-#import <ARAnalytics/ARAnalytics.h>
 #import "ARRouter.h"
 #import "ARInternalMobileWebViewController.h"
 #import "ARFairMapViewController.h"
 #import "ARBidButton.h"
+#import "ARAnalyticsConstants.h"
 
 
 @implementation ARArtworkViewController (ButtonActions)
@@ -87,19 +91,29 @@
 
 - (void)tappedContactGallery
 {
+    if (ARIsRunningInDemoMode) {
+        [UIAlertView showWithTitle:nil message:@"Feature not enabled for this demo" cancelButtonTitle:@"OK" otherButtonTitles:nil tapBlock:nil];
+        return;
+    }
+
     ARInquireForArtworkViewController *inquireVC = [[ARInquireForArtworkViewController alloc] initWithPartnerInquiryForArtwork:self.artwork fair:self.fair];
     [inquireVC presentFormWithInquiryURLRepresentation:[self inquiryURLRepresentation]];
 }
 
 - (void)tappedContactRepresentative
 {
+    if (ARIsRunningInDemoMode) {
+        [UIAlertView showWithTitle:nil message:@"Feature not enabled for this demo" cancelButtonTitle:@"OK" otherButtonTitles:nil tapBlock:nil];
+        return;
+    }
+
     ARInquireForArtworkViewController *inquireVC = [[ARInquireForArtworkViewController alloc] initWithAdminInquiryForArtwork:self.artwork fair:self.fair];
     [inquireVC presentFormWithInquiryURLRepresentation:[self inquiryURLRepresentation]];
 }
 
 - (void)tappedAuctionInfo
 {
-    ARInternalMobileWebViewController *viewController = [[ARInternalMobileWebViewController alloc] initWithURL:[NSURL URLWithString:@"/auction-info"]];
+    ARInternalMobileWebViewController *viewController = [[ARInternalMobileWebViewController alloc] initWithURL:[NSURL URLWithString:@"/how-auctions-work"]];
     [[ARTopMenuViewController sharedController] pushViewController:viewController];
 }
 
@@ -127,6 +141,9 @@
 - (void)bidCompleted:(SaleArtwork *)saleArtwork
 {
     [ARAnalytics setUserProperty:@"has_started_bid" toValue:@"true"];
+
+    ADJEvent *event = [ADJEvent eventWithEventToken:ARAdjustSentArtworkInquiry];
+    [Adjust trackEvent:event];
 
     UIViewController *viewController = [ARSwitchBoard.sharedInstance loadBidUIForArtwork:self.artwork.artworkID
                                                                                   inSale:saleArtwork.auction.saleID];
@@ -167,7 +184,7 @@
         editionSetID = [[self.artwork.editionSets objectAtIndex:0] valueForKey:@"id"];
     }
 
-    @_weakify(self);
+    @weakify(self);
     [ArtsyAPI createPendingOrderWithArtworkID:self.artwork.artworkID editionSetID:editionSetID success:^(id JSON) {
 
         NSString *orderID = [JSON valueForKey:@"id"];
@@ -177,11 +194,11 @@
         [self.navigationController pushViewController:controller animated:YES];
 
     }
-    failure:^(NSError *error) {
-        @_strongify(self);
+        failure:^(NSError *error) {
+        @strongify(self);
         ARErrorLog(@"Creating a new order failed. Error: %@,\n", error.localizedDescription);
         [self tappedContactGallery];
-    }];
+        }];
 }
 
 - (void)tappedAuctionResults

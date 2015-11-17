@@ -1,15 +1,22 @@
-extern const NSString *ARTestAccountLogin;
-extern const NSString *ARTestAccountPassword;
+extern NSString *const ARTestAccountLogin;
+extern NSString *const ARTestAccountPassword;
 
 extern const CGFloat ARAnimationQuickDuration;
 extern const CGFloat ARAnimationDuration;
 
-extern const NSString *AROAuthTokenKey;
-extern const NSString *AROExpiryDateKey;
-extern const NSString *ARXAppToken;
+extern NSString *const AROAuthTokenKey;
+extern NSString *const AROExpiryDateKey;
+extern NSString *const ARXAppToken;
+
+extern NSString *const ARAPNSDeviceTokenKey;
 
 extern NSString *const ARNetworkAvailableNotification;
 extern NSString *const ARNetworkUnavailableNotification;
+
+extern NSString *const ARAuctionArtworkBidUpdatedNotification;
+extern NSString *const ARAuctionArtworkRegistrationUpdatedNotification;
+extern NSString *const ARAuctionIDKey;
+extern NSString *const ARAuctionArtworkIDKey;
 
 typedef NS_OPTIONS(NSUInteger, ARAuctionState) {
     ARAuctionStateDefault = 0,

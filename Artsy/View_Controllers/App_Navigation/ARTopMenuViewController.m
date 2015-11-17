@@ -10,7 +10,7 @@
 
 #import "UIView+HitTestExpansion.h"
 
-@import NPKeyboardLayoutGuide;
+#import <NPKeyboardLayoutGuide/NPKeyboardLayoutGuide.h>
 
 static const CGFloat ARMenuButtonDimension = 46;
 
@@ -138,7 +138,7 @@ static const CGFloat ARMenuButtonDimension = 46;
     // Ensure it's created now and started listening for keyboard changes.
     // TODO Ideally this pod would start listening from launch of the app, so we don't need to rely on this one but can
     // be assured that any VCs guide can be trusted.
-    self.keyboardLayoutGuide;
+    (void)self.keyboardLayoutGuide;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -332,7 +332,7 @@ static const CGFloat ARMenuButtonDimension = 46;
     return [self.rootNavigationController shouldAutorotate];
 }
 
-- (NSUInteger)supportedInterfaceOrientations
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
     return self.rootNavigationController.supportedInterfaceOrientations ?: ([UIDevice isPad] ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskPortrait);
 }
@@ -372,7 +372,9 @@ static const CGFloat ARMenuButtonDimension = 46;
 
 - (BOOL)tabContentView:(ARTabContentView *)tabContentView shouldChangeToIndex:(NSInteger)index
 {
-    if ((index == ARTopTabControllerIndexFavorites || index == ARTopTabControllerIndexNotifications) && [User isTrialUser]) {
+    BOOL favoritesInDemoMode = (index == ARTopTabControllerIndexFavorites && ARIsRunningInDemoMode);
+    BOOL loggedOutBellOrFavorites = (index == ARTopTabControllerIndexFavorites || index == ARTopTabControllerIndexNotifications) && [User isTrialUser];
+    if (!favoritesInDemoMode && loggedOutBellOrFavorites) {
         ARTrialContext context = (index == ARTopTabControllerIndexFavorites) ? ARTrialContextShowingFavorites : ARTrialContextNotifications;
         [ARTrialController presentTrialWithContext:context success:^(BOOL newUser) {
             if (newUser) {
@@ -394,7 +396,7 @@ static const CGFloat ARMenuButtonDimension = 46;
         if (controller.viewControllers.count == 1) {
             UIScrollView *scrollView = nil;
             if (index == ARTopTabControllerIndexFeed) {
-                scrollView = [(ARShowFeedViewController *)[controller.childViewControllers objectAtIndex:0] tableView];
+                scrollView = [(ARSimpleShowFeedViewController *)[controller.childViewControllers objectAtIndex:0] tableView];
             } else if (index == ARTopTabControllerIndexBrowse) {
                 scrollView = [(ARBrowseViewController *)[controller.childViewControllers objectAtIndex:0] collectionView];
             } else if (index == ARTopTabControllerIndexFavorites) {

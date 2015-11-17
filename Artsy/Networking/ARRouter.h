@@ -7,6 +7,7 @@
 + (NSSet *)artsyHosts;
 + (NSURL *)baseApiURL;
 + (NSURL *)baseWebURL;
++ (NSURL *)baseDesktopWebURL;
 
 + (AFHTTPSessionManager *)httpClient;
 + (void)setupWithBaseApiURL:(NSURL *)baseApiURL;
@@ -176,5 +177,6 @@
 + (NSURLRequest *)newUptimeURLRequest;
 + (NSURLRequest *)newSystemTimeRequest;
 + (NSURLRequest *)newRequestOutbidNotificationRequest;
++ (NSURLRequest *)newRequestForBlankPage;
 
 @end

@@ -1,13 +1,21 @@
 #import "ARTestHelper.h"
 
+#import "ARLogger.h"
+#import "ARRouter.h"
+#import "ARSpotlight.h"
+#import "ARUserManager.h"
+
+#import <iRate/iRate.h>
+
 
 @implementation ARTestHelper
 
-+ (void)load;
+- (BOOL)application:(UIApplication *)application willFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
 {
     NSOperatingSystemVersion version = [NSProcessInfo processInfo].operatingSystemVersion;
-    NSAssert(version.majorVersion == 8 && version.minorVersion == 3,
-             @"The tests should be run on iOS 8.3, not %ld.%ld", version.majorVersion, version.minorVersion);
+
+    NSAssert(version.majorVersion == 9,
+             @"The tests should be run on iOS 9.x, not %ld.%ld", version.majorVersion, version.minorVersion);
 
     CGSize nativeResolution = [UIScreen mainScreen].nativeBounds.size;
     NSAssert([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone && CGSizeEqualToSize(nativeResolution, CGSizeMake(750, 1334)),
@@ -15,6 +23,22 @@
              NSStringFromCGSize(nativeResolution));
 
     ARPerformWorkAsynchronously = NO;
+    [ARRouter setup];
+
+    // Disable this so that no actual changes are made to the index as side-effects of favoriting entities.
+    [ARSpotlight disableIndexing];
+
+    // Shared Web Credentials involve async processes that trigger OS alerts and are generally hard to deal with.
+    // The related ARUserManager methods can still be invoked, they will just silently do nothing.
+    [[ARUserManager sharedManager] disableSharedWebCredentials];
+
+    /// Never run in tests
+    [[iRate sharedInstance] setRatedThisVersion:YES];
+
+    /// Not really sure what this is for
+    [[ARLogger sharedLogger] startLogging];
+
+    return YES;
 }
 
 @end

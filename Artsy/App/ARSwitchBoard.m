@@ -1,6 +1,6 @@
 #import "ARRouter.h"
 #import <JLRoutes/JLRoutes.h>
-#import <UIAlertView_Blocks/UIAlertView+Blocks.h>
+#import <UIAlertView+Blocks/UIAlertView+Blocks.h>
 
 // View Controllers
 #import "ARArtworkSetViewController.h"
@@ -15,6 +15,7 @@
 #import "ARUserSettingsViewController.h"
 #import "ARArtistViewController.h"
 #import "ARAuctionArtworkResultsViewController.h"
+#import "ARAuctionWebViewController.h"
 #import "ARFavoritesViewController.h"
 #import "ARFairMapViewController.h"
 #import "ARProfileViewController.h"
@@ -61,9 +62,9 @@
 
     _routes = [[JLRoutes alloc] init];
 
-   @_weakify(self);
+    @weakify(self);
     [self.routes addRoute:@"/artist/:id" handler:^BOOL(NSDictionary *parameters) {
-        @_strongify(self)
+        @strongify(self)
         ARArtistViewController *viewController = [self loadArtistWithID:parameters[@"id"]];
         [[ARTopMenuViewController sharedController] pushViewController:viewController];
         return YES;
@@ -72,9 +73,10 @@
     // For artists in a gallery context, like https://artsy.net/spruth-magers/artist/astrid-klein . Until we have a native
     // version of the gallery profile/context, we will use the normal native artist view instead of showing a web view on iPad.
 
+
     if ([UIDevice isPad]) {
         [self.routes addRoute:@"/:profile_id/artist/:id" handler:^BOOL(NSDictionary *parameters) {
-            @_strongify(self)
+            @strongify(self)
 
             Fair *fair = [parameters[@"fair"] isKindOfClass:Fair.class] ? parameters[@"fair"] : nil;
             ARArtistViewController *viewController = (id)[self loadArtistWithID:parameters[@"id"] inFair:fair];
@@ -83,16 +85,39 @@
         }];
     }
 
+
     [self.routes addRoute:@"/artwork/:id" handler:^BOOL(NSDictionary *parameters) {
-        @_strongify(self)
+        @strongify(self)
         Fair *fair = [parameters[@"fair"] isKindOfClass:Fair.class] ? parameters[@"fair"] : nil;
         ARArtworkSetViewController *viewController = [self loadArtworkWithID:parameters[@"id"] inFair:fair];
         [[ARTopMenuViewController sharedController] pushViewController:viewController];
         return YES;
     }];
 
+    [self.routes addRoute:@"/auction-registration/:id" handler:^BOOL(NSDictionary *parameters) {
+        @strongify(self)
+        ARAuctionWebViewController *viewController = [self loadAuctionRegistrationWithID:parameters[@"id"]];
+        [[ARTopMenuViewController sharedController] pushViewController:viewController];
+        return YES;
+    }];
+
+    [self.routes addRoute:@"/auction/:id" handler:^BOOL(NSDictionary *parameters) {
+        @strongify(self)
+        ARAuctionWebViewController *viewController = [self loadAuctionWithID:parameters[@"id"]];
+        [[ARTopMenuViewController sharedController] pushViewController:viewController];
+        return YES;
+    }];
+
+    [self.routes addRoute:@"/auction/:id/bid/:artwork_id" handler:^BOOL(NSDictionary *parameters) {
+        @strongify(self)
+        UIViewController *viewController = [self loadBidUIForArtwork:parameters[@"artwork_id"]
+                                                              inSale:parameters[@"id"]];
+        [[ARTopMenuViewController sharedController] pushViewController:viewController];
+        return YES;
+    }];
+
     [self.routes addRoute:@"/gene/:id" handler:^BOOL(NSDictionary *parameters) {
-        @_strongify(self)
+        @strongify(self)
         ARGeneViewController *viewController = [self loadGeneWithID:parameters[@"id"]];
         [[ARTopMenuViewController sharedController] pushViewController:viewController];
         return YES;
@@ -100,7 +125,7 @@
 
 
     [self.routes addRoute:@"/show/:id" handler:^BOOL(NSDictionary *parameters) {
-        @_strongify(self)
+        @strongify(self)
         ARShowViewController *viewController = [self loadShowWithID:parameters[@"id"]];
         [[ARTopMenuViewController sharedController] pushViewController:viewController];
         return YES;
@@ -110,7 +135,7 @@
 
         if ([UIDevice isPad]) { return NO; }
 
-        @_strongify(self);
+        @strongify(self);
 
         Fair *fair = [parameters[@"fair"] isKindOfClass:Fair.class] ? parameters[@"fair"] : nil;
         UIViewController *viewController = [self loadFairGuideWithFair:fair];
@@ -123,12 +148,13 @@
 
         if ([UIDevice isPad]) { return NO; }
 
-        @_strongify(self)
+        @strongify(self)
         Fair *fair = parameters[@"fair"] ?: [[Fair alloc] initWithFairID:parameters[@"profile_id"]];
         UIViewController *viewController = [self loadArtistInFairWithID:parameters[@"id"] fair:fair];
         [[ARTopMenuViewController sharedController] pushViewController:viewController];
         return YES;
     }];
+
 
     [self.routes addRoute:@"/" handler:^BOOL(NSDictionary *parameters) {
         [[ARTopMenuViewController sharedController] loadFeed];
@@ -155,7 +181,7 @@
 
     // This route will match any single path component and thus should be added last.
     [self.routes addRoute:@"/:profile_id" handler:^BOOL(NSDictionary *parameters) {
-        @_strongify(self);
+        @strongify(self);
         UIViewController *viewController = [self routeProfileWithID: parameters[@"profile_id"]];
         [[ARTopMenuViewController sharedController] pushViewController:viewController];
         return YES;
@@ -185,10 +211,25 @@
     return viewController;
 }
 
-- (UIViewController *)loadBidUIForArtwork:(NSString *)artworkID inSale:(NSString *)saleID
+- (ARAuctionWebViewController *)loadAuctionWithID:(NSString *)auctionID;
+{
+    NSString *path = [NSString stringWithFormat:@"/auction/%@", auctionID];
+    NSURL *URL = [self resolveRelativeUrl:path];
+    return [[ARAuctionWebViewController alloc] initWithURL:URL auctionID:auctionID artworkID:nil];
+}
+
+- (ARAuctionWebViewController *)loadAuctionRegistrationWithID:(NSString *)auctionID;
+{
+    NSString *path = [NSString stringWithFormat:@"/auction-registration/%@", auctionID];
+    NSURL *URL = [self resolveRelativeUrl:path];
+    return [[ARAuctionWebViewController alloc] initWithURL:URL auctionID:auctionID artworkID:nil];
+}
+
+- (ARAuctionWebViewController *)loadBidUIForArtwork:(NSString *)artworkID inSale:(NSString *)saleID
 {
     NSString *path = [NSString stringWithFormat:@"/auction/%@/bid/%@", saleID, artworkID];
-    return [self loadURL:[NSURL URLWithString:path]];
+    NSURL *URL = [self resolveRelativeUrl:path];
+    return [[ARAuctionWebViewController alloc] initWithURL:URL auctionID:saleID artworkID:artworkID];
 }
 
 - (ARAuctionArtworkResultsViewController *)loadAuctionResultsForArtwork:(Artwork *)artwork
@@ -310,6 +351,8 @@
 
 - (UIViewController *)loadURL:(NSURL *)url fair:(Fair *)fair
 {
+    NSParameterAssert(url);
+
     // May be nil by the end of the method
     UIViewController *viewController;
 
@@ -367,6 +410,14 @@
     if ([url.path isEqualToString:@"/works-for-you"]) {
         ARTopMenuViewController *menuController = [ARTopMenuViewController sharedController];
         return [[menuController rootNavigationControllerAtIndex:ARTopTabControllerIndexNotifications] rootViewController];
+    }
+    if ([url.path isEqualToString:@"/articles"]) {
+        ARTopMenuViewController *menuController = [ARTopMenuViewController sharedController];
+        return [[menuController rootNavigationControllerAtIndex:ARTopTabControllerIndexMagazine] rootViewController];
+    }
+    if ([url.path isEqualToString:@"/shows"]) {
+        ARTopMenuViewController *menuController = [ARTopMenuViewController sharedController];
+        return [[menuController rootNavigationControllerAtIndex:ARTopTabControllerIndexShows] rootViewController];
     }
 
     BOOL routed = [self.routes routeURL:url withParameters:(fair ? @{ @"fair" : fair } : nil)];

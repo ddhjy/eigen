@@ -3,8 +3,11 @@
 #import "ARHasImageBaseURL.h"
 #import "SaleArtwork.h"
 #import "ARShareableObject.h"
-#import <KSDeferred/KSDeferred.h>
 #import "ARHeartStatus.h"
+#import "ARSpotlight.h"
+
+#import <KSDeferred/KSDeferred.h>
+#import <Mantle/Mantle.h>
 
 // TODO: Add support ARFollowable for following status
 
@@ -24,7 +27,7 @@ typedef NS_ENUM(NSInteger, ARDimensionMetric) {
 };
 
 
-@interface Artwork : MTLModel <ARPostAttachment, MTLJSONSerializing, ARHasImageBaseURL, ARShareableObject>
+@interface Artwork : MTLModel <ARPostAttachment, MTLJSONSerializing, ARHasImageBaseURL, ARShareableObject, ARSpotlightMetadataProvider>
 
 @property (nonatomic, copy) NSString *artworkID;
 @property (nonatomic, strong) NSNumber *depth;
@@ -102,10 +105,17 @@ typedef NS_ENUM(NSInteger, ARDimensionMetric) {
 - (void)updatePartnerShow;
 
 /// Adds a callback when the artwork has been update, does not trigger said update.
-- (KSPromise *)onArtworkUpdate:(void (^)(void))success failure:(void (^)(NSError *error))failure;
-- (KSPromise *)onSaleArtworkUpdate:(void (^)(SaleArtwork *saleArtwork))success failure:(void (^)(NSError *error))failure;
-- (KSPromise *)onFairUpdate:(void (^)(Fair *fair))success failure:(void (^)(NSError *error))failure;
-- (KSPromise *)onPartnerShowUpdate:(void (^)(PartnerShow *show))success failure:(void (^)(NSError *error))failure;
+- (KSPromise *)onArtworkUpdate:(void (^)(void))success
+                       failure:(void (^)(NSError *error))failure;
+- (KSPromise *)onSaleArtworkUpdate:(void (^)(SaleArtwork *saleArtwork))success
+                           failure:(void (^)(NSError *error))failure;
+- (KSPromise *)onSaleArtworkUpdate:(void (^)(SaleArtwork *saleArtwork))success
+                           failure:(void (^)(NSError *error))failure
+                       allowCached:(BOOL)allowCached;
+- (KSPromise *)onFairUpdate:(void (^)(Fair *fair))success
+                    failure:(void (^)(NSError *error))failure;
+- (KSPromise *)onPartnerShowUpdate:(void (^)(PartnerShow *show))success
+                           failure:(void (^)(NSError *error))failure;
 
 - (void)setFollowState:(BOOL)state success:(void (^)(id))success failure:(void (^)(NSError *))failure;
 - (void)getFavoriteStatus:(void (^)(ARHeartStatus status))success failure:(void (^)(NSError *error))failure;

@@ -28,6 +28,8 @@ extern NSString *const ARUserSessionStartedNotification;
 - (BOOL)hasValidAuthenticationToken;
 - (BOOL)hasValidXAppToken;
 
+- (void)disableSharedWebCredentials;
+- (void)tryLoginWithSharedWebCredentials:(void (^)(NSError *error))completion;
 
 - (void)startTrial:(void (^)())callback failure:(void (^)(NSError *error))failure;
 
@@ -37,6 +39,14 @@ extern NSString *const ARUserSessionStartedNotification;
                   gotUser:(void (^)(User *currentUser))gotUser
     authenticationFailure:(void (^)(NSError *error))authenticationFailure
            networkFailure:(void (^)(NSError *error))networkFailure;
+
+- (void)loginWithUsername:(NSString *)username
+                 password:(NSString *)password
+   successWithCredentials:(void (^)(NSString *accessToken, NSDate *expirationDate))credentials
+                  gotUser:(void (^)(User *currentUser))gotUser
+    authenticationFailure:(void (^)(NSError *error))authenticationFailure
+           networkFailure:(void (^)(NSError *error))networkFailure
+ saveSharedWebCredentials:(BOOL)saveSharedWebCredentials;
 
 - (void)loginWithFacebookToken:(NSString *)token
         successWithCredentials:(void (^)(NSString *accessToken, NSDate *expirationDate))credentials
@@ -51,10 +61,34 @@ extern NSString *const ARUserSessionStartedNotification;
         authenticationFailure:(void (^)(NSError *error))authenticationFailure
                networkFailure:(void (^)(NSError *error))networkFailure;
 
-- (void)createUserWithName:(NSString *)name email:(NSString *)email password:(NSString *)password success:(void (^)(User *user))success failure:(void (^)(NSError *error, id JSON))failure;
-- (void)createUserViaFacebookWithToken:(NSString *)token email:(NSString *)email name:(NSString *)name success:(void (^)(User *user))success failure:(void (^)(NSError *error, id JSON))failure;
-- (void)createUserViaTwitterWithToken:(NSString *)token secret:(NSString *)secret email:(NSString *)email name:(NSString *)name success:(void (^)(User *user))success failure:(void (^)(NSError *error, id JSON))failure;
+- (void)createUserWithName:(NSString *)name
+                     email:(NSString *)email
+                  password:(NSString *)password
+                   success:(void (^)(User *user))success
+                   failure:(void (^)(NSError *error, id JSON))failure;
 
-- (void)sendPasswordResetForEmail:(NSString *)email success:(void (^)(void))success failure:(void (^)(NSError *error))failure;
+- (void)createUserWithName:(NSString *)name
+                     email:(NSString *)email
+                  password:(NSString *)password
+                   success:(void (^)(User *))success
+                   failure:(void (^)(NSError *error, id JSON))failure
+  saveSharedWebCredentials:(BOOL)saveSharedWebCredentials;
+
+- (void)createUserViaFacebookWithToken:(NSString *)token
+                                 email:(NSString *)email
+                                  name:(NSString *)name
+                               success:(void (^)(User *user))success
+                               failure:(void (^)(NSError *error, id JSON))failure;
+
+- (void)createUserViaTwitterWithToken:(NSString *)token
+                               secret:(NSString *)secret
+                                email:(NSString *)email
+                                 name:(NSString *)name
+                              success:(void (^)(User *user))success
+                              failure:(void (^)(NSError *error, id JSON))failure;
+
+- (void)sendPasswordResetForEmail:(NSString *)email
+                          success:(void (^)(void))success
+                          failure:(void (^)(NSError *error))failure;
 
 @end

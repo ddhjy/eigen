@@ -18,6 +18,7 @@ NSString *const ARAnalyticsTappedLogIn = @"Tapped log in";
 NSString *const ARAnalyticsSignInEmail = @"Login with email";
 NSString *const ARAnalyticsSignInTwitter = @"Login with twitter";
 NSString *const ARAnalyticsSignInFacebook = @"Login with facebook";
+NSString *const ARAnalyticsSignInWebCredentials = @"Login with web credentials";
 NSString *const ARAnalyticsSignInError = @"Login errors";
 
 NSString *const ARAnalyticsSignUpEmail = @"Sign up with email";
@@ -114,3 +115,11 @@ NSString *const ARAnalyticsFairMapPartnerShowTapped = @"fair tapped map partner 
 
 NSString *const ARAnalyticsAuctionBidTapped = @"Bid button";
 NSString *const ARAnalyticsAuctionHowBiddingWorks = @"How bidding works";
+
+
+NSString *const ARAdjustCreatedAnAccount = @"g6q772";
+NSString *const ARAdjustSentArtworkInquiry = @"duxtlx";
+NSString *const ARAdjustFirstUserInstall = @"kju96h";
+NSString *const ARAdjustTappedBidButton = @"w5e24e";
+
+

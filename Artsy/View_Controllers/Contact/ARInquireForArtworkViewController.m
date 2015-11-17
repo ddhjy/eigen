@@ -1,11 +1,14 @@
+#import <Adjust/Adjust.h>
+#import <ALPValidator/ALPValidator.h>
+#import <FLKAutoLayout/UIViewController+FLKAutoLayout.h>
+
 #import "ARInquireForArtworkViewController.h"
 #import "ARUserManager.h"
 #import "UIViewController+ScreenSize.h"
 #import "UIView+HittestExpansion.h"
 #import "ARAppDelegate.h"
-#import <ALPValidator/ALPValidator.h>
+#import "ARAnalyticsConstants.h"
 
-#define USE_LIVE_DATA 1
 // Future TODO: Don't use image alpha on contact image, use grayscale'd image.
 
 // The state of the form, for enabling / disabling
@@ -696,18 +699,18 @@ typedef NS_ENUM(NSInteger, ARInquireFormState) {
 
 - (void)getCurrentAdmin
 {
-    @_weakify(self);
+    @weakify(self);
     [ArtsyAPI getInquiryContact:^(User *contactStub) {
-        @_strongify(self);
+        @strongify(self);
         self.specialistNameLabel.text = contactStub.name;
 
     } withProfile:^(Profile *contactProfile) {
-        @_strongify(self);
+        @strongify(self);
         // Use a white BG because the square to circle looks ugly
         [self.specialistHeadImage ar_setImageWithURL:[NSURL URLWithString:contactProfile.iconURL] placeholderImage:[UIImage imageFromColor:[UIColor whiteColor]]];
 
     } failure:^(NSError *error) {
-        @_strongify(self);
+        @strongify(self);
         ARErrorLog(@"Couldn't get an inquiry contact. %@", error.localizedDescription);
         [self performSelector:@selector(getCurrentAdmin) withObject:nil afterDelay:2];
     }];
@@ -743,11 +746,6 @@ typedef NS_ENUM(NSInteger, ARInquireFormState) {
         [self inquiryFailed:error];
     };
 
-
-#if USE_LIVE_DATA == 0
-    [self performSelector:@selector(stubCompletionHandler:) withObject:success afterDelay:2];
-#endif
-#if USE_LIVE_DATA == 1
     ARAppDelegate *delegate = [ARAppDelegate sharedInstance];
 
     NSDictionary *analyticsDictionary = @{
@@ -773,12 +771,6 @@ typedef NS_ENUM(NSInteger, ARInquireFormState) {
                                                 success:success
                                                 failure:failure];
     }
-#endif
-}
-
-- (void)stubCompletionHandler:(void (^)(id message))block
-{
-    block(nil);
 }
 
 - (UIColor *)inputTintColor
@@ -788,6 +780,11 @@ typedef NS_ENUM(NSInteger, ARInquireFormState) {
 
 - (void)inquiryCompleted:(NSString *)message
 {
+    ADJEvent *event = [ADJEvent eventWithEventToken:ARAdjustSentArtworkInquiry];
+    [event addCallbackParameter:@"artwork" value:self.artwork.name];
+    [event addCallbackParameter:@"email" value:self.emailInput.text];
+    [Adjust trackEvent:event];
+
     [self setStatusWithTitle:@"Thank you" body:@"Your message has been sent"];
     [self performSelector:@selector(removeFromHostViewController) withObject:nil afterDelay:2];
 }
@@ -843,9 +840,9 @@ typedef NS_ENUM(NSInteger, ARInquireFormState) {
     _emailValidator = [ALPValidator validatorWithType:ALPValidatorTypeString];
     [self.emailValidator addValidationToEnsureValidEmailWithInvalidMessage:NSLocalizedString(@"Please enter a valid email", nil)];
 
-    @_weakify(self);
+    @weakify(self);
     self.emailValidator.validatorStateChangedHandler = ^(ALPValidatorState newState) {
-        @_strongify(self);
+        @strongify(self);
         self.sendButton.enabled = self.emailValidator.isValid;
       // We can also use newState to determine what to do in more complex situations. Validator states include:
       // ALPValidatorValidationStateValid, ALPValidatorValidationStateInvalid, ALPValidatorValidationStateWaitingForRemote

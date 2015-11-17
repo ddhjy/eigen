@@ -1,3 +1,55 @@
+### 2.3.0
+
+* 3D Touch Peek/pop support for artworks in grid views - jorystiefel & orta
+* 3D Touch quick action menu items for Artsy icon on home screen - jorystiefel
+* Add support for Shared Web Credentials. Available credentials are shown on the login view and entered/created credentials are saved for web use. - alloy
+* Add support for Universal Links on iOS 9. - alloy
+* Add Native <-> Web Handoff support. - jorystiefel & alloy
+* Add Spotlight support for favorite artworks, artists, and genes. - jorystiefel & alloy
+* Convert all web views to use the modern, faster, and better WKWebView - orta
+* Fix an issue where after 8 rotations our progress indicator would stop rotating, making it seem as if the progress was finished when it was actually not. - alloy
+* Don’t allow the search view to rotate on iPhone. - alloy
+* Search hides the statusbar - orta
+* After bidding on an auction item move back from the bidding view to the artwork in question. - alloy
+* Update artwork views after bidding on that artwork. - alloy
+* Update auction views after bidding on an artwork in that auction. - alloy
+* Fix crash by disabling network logging in release mode completely. - alloy
+
+## 2.2.1 (11/09/2015)
+
+* Fix bundle display name. - alloy
+* Remove `?foo=bar` parameter from Martsy calls - jorystiefel
+
+## 2.2.0 (07/09/2015)
+
+* Don’t show a progress indicator when navigating back to a web view that was not yet fully done loading. - alloy
+* Reload a web view that was not fully done loading when the user navigated away, ensuring the user doesn’t get to see broken pages. - alloy
+* Fix push notification registration after initial on-boarding for trial users. - alloy
+* Show price in artwork grid views - jorystiefel
+* Fix crash related to search icon being pressed again before search view was fully dismissed - jorystiefel
+* Ensure that a dollar sign is always used when displaying dollar prices. - alloy
+* Fix "Contact for Price" not showing on artworks - jorystiefel
+* Fix notification count getting stuck on app badge. - alloy
+* Fix auto-advance on home feed hero carousel and don't lose carousel position when navigating away - jorystiefel
+* Skip onboarding flow when registering to bid on iPhone - jorystiefel
+* Fix artwork zoom bug and only zoom if we have a big enough tiled image for iPad screen - 1aurabrown
+* Add Artwork "Exhibition History" section to More Info view - jorystiefel
+* Add a warning message when creating account if password too short or email doesn't validate - jorystiefel
+* Enable Markdown rendering in Artwork More Information screen - jorystiefel
+* [iOS 9] Fix FLKAutoLayout issues with top and bottom layout guides. - alloy
+* [iOS 9] Allow non-SSL connections to any domain. This is needed for now as we might present non-SSL sites in the
+  external web-browser. - alloy
+* [iOS 9] Fix tab bar not showing. - alloy
+* [iOS 9] Fix search view text field not showing. - alloy
+* [iOS 9] Fix artwork view layout on first launch. - alloy
+* [iOS 9] Fix artwork view layout after rotating into and out of VIR. - alloy
+* [iOS 9] Fix layout of artwork set view after rotating into and out of VIR. - alloy
+* [iOS 9] Fix layout of onboarding views. - alloy
+* [iOS 9] Fix artist view not getting a frame when opened from a search result. - alloy
+* [iOS 9] Ensure cells on genes overview are all properly sized on first launch. - alloy
+* [iOS 9] Ensure navigation buttons are shown/hidden on gene view when scrolling. - alloy
+* [iOS 9] Fix views where undefined behaviour of FLKAutoLayout constraints was being depended on. - alloy
+
 ## 2.1.0 (23/07/2015)
 
 * Fix broken iPad orientation for Categories view - 1aurabrown

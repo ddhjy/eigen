@@ -107,7 +107,12 @@ describe(@"User-Agent", ^{
     __block NSString *userAgent = [[NSUserDefaults standardUserDefaults] valueForKey:@"UserAgent"];
 
     it(@"uses Artsy-Mobile hard-coded in Microgravity", ^{
-        expect(userAgent).to.beginWith(@"Artsy-Mobile/");
+        expect(userAgent).to.contain(@"Artsy-Mobile/");
+    });
+    
+    it(@"contains compatibility strings", ^{
+        expect(userAgent).to.contain(@"AppleWebKit/");
+        expect(userAgent).to.contain(@"KHTML");
     });
 
     it(@"uses Eigen", ^{
@@ -120,10 +125,6 @@ describe(@"User-Agent", ^{
     
     it(@"contains build number", ^{
         expect(userAgent).to.contain([[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]);
-    });
-
-    it(@"preserves simulator information", ^{
-        expect(userAgent).to.contain(@"iPhone Simulator");
     });
 
     it(@"is contained in requests sent out from router", ^{
@@ -157,9 +158,9 @@ describe(@"baseWebURL", ^{
     
     it(@"points to artsy web on ipad", ^{
         [ARTestContext stubDevice:ARDeviceTypePad];
-        expect([ARRouter baseWebURL]).to.equal([NSURL URLWithString:@"https://artsy.net"]);
+        expect([ARRouter baseWebURL]).to.equal([NSURL URLWithString:@"https://www.artsy.net"]);
         [ARTestContext stopStubbing];
     });
 });
 
-SpecEnd
+SpecEnd;

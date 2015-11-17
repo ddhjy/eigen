@@ -8,6 +8,36 @@ after(^{
     vc = nil;
 });
 
+it(@"creates an NSUserActivity", ^{
+    
+    [OHHTTPStubs stubJSONResponseAtPath:@"/api/v1/gene/painting" withResponse:@{
+        @"id" : @"painting",
+        @"name" : @"Painting",
+        @"description" : @"Lorem ipsum dolor sit amet..."
+    }];
+    
+    NSArray *artworksJSON = [NSArray array];
+    for (int i = 1; i <= 3; i++){
+        artworksJSON = [artworksJSON arrayByAddingObject:@{
+           @"title" : NSStringWithFormat(@"Artwork %i", i),
+           @"artist" : @{
+                   @"name" : NSStringWithFormat(@"Artist %i", i)
+                   },
+           @"date" : @"2009"
+       }];
+    }
+    
+    [OHHTTPStubs stubJSONResponseAtPath:@"/api/v1/search/filtered/gene/painting" withResponse:artworksJSON];
+    
+    vc = [[ARGeneViewController alloc] initWithGeneID:@"painting"];
+    vc.view.frame = [[UIScreen mainScreen] bounds];
+    [vc viewDidAppear:NO];
+    
+    expect(vc.userActivity).willNot.beNil();
+    expect(vc.userActivity.title).to.equal(@"Painting");
+
+});
+
 pending(@"with long desciption", ^{ // This works, but on Travis we get a weird autolayout error.
 // itHasAsyncronousSnapshotsForDevicesWithName(@"with long desciption", ^{
     [OHHTTPStubs stubJSONResponseAtPath:@"/api/v1/gene/painting" withResponse:@{
@@ -36,4 +66,4 @@ pending(@"with long desciption", ^{ // This works, but on Travis we get a weird 
     return vc;
 });
 
-SpecEnd
+SpecEnd;

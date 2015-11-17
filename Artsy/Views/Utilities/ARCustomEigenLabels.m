@@ -8,10 +8,16 @@
 
 @implementation ARArtworkTitleLabel
 
+- (void)setup
+{
+    [super setup];
+    self.lineHeight = 3;
+}
+
 - (void)setTitle:(NSString *)artworkTitle date:(NSString *)date;
 {
     NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-    [paragraphStyle setLineSpacing:3];
+    [paragraphStyle setLineSpacing:self.lineHeight];
 
     NSMutableAttributedString *titleAndDate = [[NSMutableAttributedString alloc] initWithString:artworkTitle ?: @"" attributes:@{
         NSParagraphStyleAttributeName : paragraphStyle
@@ -27,7 +33,6 @@
     }
 
     self.font = [UIFont serifItalicFontWithSize:self.font.pointSize];
-    self.numberOfLines = 0;
     self.attributedText = titleAndDate;
 }
 
@@ -90,7 +95,7 @@ static CGFloat ARWarningViewMargin = 8;
     [super layoutSubviews];
 
     CGRect frame = self.attentionSign.bounds;
-    frame.origin.x = ((CGRectGetWidth(self.bounds) - self.intrinsicContentSize.width) / 2) - ARWarningViewMargin;
+    frame.origin.x = MAX(0, ((CGRectGetWidth(self.bounds) - self.intrinsicContentSize.width) / 2) - ARWarningViewMargin);
     frame.origin.y = (CGRectGetHeight(self.bounds) - CGRectGetHeight(frame)) / 2;
     self.attentionSign.frame = frame;
     self.attentionSign.tintColor = self.textColor;

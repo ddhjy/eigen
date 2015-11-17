@@ -38,9 +38,11 @@
 
 const CGFloat kClosedMapHeight = 180.0f;
 
+AR_VC_OVERRIDE_SUPER_DESIGNATED_INITIALIZERS;
+
 - (instancetype)initWithFair:(Fair *)fair
 {
-    self = [super init];
+    self = [super initWithNibName:nil bundle:nil];
     if (!self) return nil;
 
     _fair = fair;
@@ -58,21 +60,21 @@ const CGFloat kClosedMapHeight = 180.0f;
 
     self.view.backgroundColor = [UIColor whiteColor];
 
-   @_weakify(self);
+   @weakify(self);
     [[[self rac_signalForSelector:@selector(viewWillAppear:)] take:1] subscribeNext:^(id _) {
-        @_strongify(self);
+        @strongify(self);
         [self downloadContent];
     }];
 
     [[RACSignal combineLatest:@[ RACObserve(self, mapsLoaded), RACObserve(self, fairLoaded) ]] subscribeNext:^(id x) {
-        @_strongify(self);
+        @strongify(self);
         [self checkForDataLoaded];
     }];
 
     // Every time the mapCollapsed property changes, we want to setup the constraints.
     // We skip the first time because we don't want to fire immediately.
     [[[RACObserve(self, mapCollapsed) skip:1] distinctUntilChanged] subscribeNext:^(id _) {
-        @_strongify(self);
+        @strongify(self);
 
         CGFloat height = 0;
         if (self.mapCollapsed) {
@@ -113,7 +115,7 @@ const CGFloat kClosedMapHeight = 180.0f;
     return NO;
 }
 
-- (NSUInteger)supportedInterfaceOrientations
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
     return UIInterfaceOrientationMaskPortrait;
 }

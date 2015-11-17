@@ -4,7 +4,7 @@
 #import <ARAnalytics/ARAnalytics.h>
 #import <ARAnalytics/ARDSL.h>
 #import "ARAnalyticsConstants.h"
-#import <HockeySDK_Source/BITHockeyManager.h>
+#import <HockeySDK-Source/BITHockeyManager.h>
 #import <Mantle/NSDictionary+MTLManipulationAdditions.h>
 #import <Adjust/Adjust.h>
 #import "ARUserManager.h"
@@ -368,7 +368,7 @@
                         },
                         @{
                             ARAnalyticsEventName: ARAnalyticsAuctionBidTapped,
-                            ARAnalyticsSelectorName: NSStringFromSelector(@selector(bidCompelted:)),
+                            ARAnalyticsSelectorName: NSStringFromSelector(@selector(bidCompleted:)),
                             ARAnalyticsProperties: ^NSDictionary*(ARArtworkViewController *controller, NSArray *parameters){
                                 SaleArtwork *saleArtwork = parameters.first;
                                 return @{
@@ -410,8 +410,19 @@
                             ARAnalyticsEventName: ARAnalyticsInquiryError,
                             ARAnalyticsSelectorName: @"inquiryFailed:",
                             ARAnalyticsProperties: ^NSDictionary*(ARInquireForArtworkViewController *controller, NSArray *parameters) {
+
+                                NSError *error = [parameters first];
+                                NSData *data = error.userInfo[AFNetworkingOperationFailingURLResponseDataErrorKey];
+                                NSDictionary *recoverySuggestion;
+                                NSString *responseString = @"";
+                                if (data) {
+                                    recoverySuggestion = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                                    responseString = [recoverySuggestion objectForKey:@"message"];
+                                }
+        
                                 return @{
-                                    @"errors" : [[parameters first] localizedDescription] ?: @"",
+                                    @"errors" : [error localizedDescription] ?: @"",
+                                    @"response" : responseString,
                                 };
                             }
                         },
@@ -440,6 +451,13 @@
                 @{
                     ARAnalyticsClass: ARSignUpActiveUserViewController.class,
                     ARAnalyticsDetails: @[
+                        @{
+                            ARAnalyticsEventName: ARAnalyticsSignInWebCredentials,
+                            ARAnalyticsSelectorName: @"loggedInWithSharedCredentials",
+                            ARAnalyticsProperties: ^NSDictionary *(ARSignUpActiveUserViewController *controller, NSArray *_) {
+                                return @{@"active_user": @"true"};
+                            }
+                        },
                         @{
                             ARAnalyticsEventName: ARAnalyticsTappedLogIn,
                             ARAnalyticsSelectorName: ARAnalyticsSelector(goToLogin:),
@@ -675,6 +693,13 @@
                         @{
                             ARAnalyticsEventName: ARAnalyticsTappedSignUp,
                             ARAnalyticsSelectorName: NSStringFromSelector(@selector(signUp:)),
+                        },
+                        @{
+                            ARAnalyticsEventName: ARAnalyticsSignInWebCredentials,
+                            ARAnalyticsSelectorName: @"loggedInWithSharedCredentials",
+                            ARAnalyticsProperties: ^NSDictionary *(ARSignUpSplashViewController *controller, NSArray *_) {
+                                return @{@"active_user": @"true"};
+                            }
                         },
                         @{
                             ARAnalyticsEventName: ARAnalyticsTryWithoutAccount,

@@ -4,12 +4,13 @@
 #define ADMIN_MENU_ENABLED 1
 #endif
 
-@import FBSDKCoreKit;
-@import FBSDKLoginKit;
-@import ORKeyboardReactingApplication;
-@import iRate;
-@import AFOAuth1Client;
-@import UICKeyChainStore;
+#import <FBSDKCoreKit/FBSDKCoreKit.h>
+#import <FBSDKLoginKit/FBSDKLoginKit.h>
+#import <ORKeyboardReactingApplication/ORKeyboardReactingApplication.h>
+#import <iRate/iRate.h>
+#import <AFOAuth1Client/AFOAuth1Client.h>
+#import <UICKeyChainStore/UICKeyChainStore.h>
+#import <Adjust/Adjust.h>
 
 #import "ARAppWatchCommunicator.h"
 
@@ -22,6 +23,7 @@
 #import "ARUserManager.h"
 
 #import "UIViewController+InnermostTopViewController.h"
+#import "ARSimpleShowFeedViewController.h"
 #import "ARAdminSettingsViewController.h"
 #import "ARQuicksilverViewController.h"
 #import "ARRouter.h"
@@ -29,6 +31,8 @@
 #import "ARNetworkConstants.h"
 #import "ArtsyAPI+Private.h"
 #import "ARFileUtils.h"
+#import "ARSpotlight.h"
+#import "ARWebViewCacheHost.h"
 
 #import <Keys/ArtsyKeys.h>
 #import "AREndOfLineInternalMobileWebViewController.h"
@@ -38,13 +42,12 @@
 #import "ARBackButtonCallbackManager.h"
 
 #if ADMIN_MENU_ENABLED
-@import DHCShakeNotifier;
-@import VCRURLConnection;
+#import <DHCShakeNotifier/UIWindow+DHCShakeRecognizer.h>
+#import <VCRURLConnection/VCR.h>
 #endif
 
 // demo
 #import "ARDemoSplashViewController.h"
-#import "ARShowFeedViewController.h"
 
 
 @interface ARAppDelegate ()
@@ -59,9 +62,13 @@ static ARAppDelegate *_sharedInstance = nil;
 
 + (void)load
 {
-    id delegate = [[self alloc] init];
-    [JSDecoupledAppDelegate sharedAppDelegate].appStateDelegate = delegate;
-    [JSDecoupledAppDelegate sharedAppDelegate].URLResourceOpeningDelegate = delegate;
+    _sharedInstance = [[self alloc] init];
+    [JSDecoupledAppDelegate sharedAppDelegate].appStateDelegate = _sharedInstance;
+
+    // TODO Until we drop iOS 8 support, we can’t really conform to the `JSApplicationURLResourceOpeningDelegate`
+    // protocol, as it means we would have to implement `application:openURL:options:` which seems tricky if we still
+    // have to implement `application:openURL:sourceApplication:annotation:` as well.
+    [JSDecoupledAppDelegate sharedAppDelegate].URLResourceOpeningDelegate = (id)_sharedInstance;
 }
 
 + (ARAppDelegate *)sharedInstance
@@ -69,13 +76,8 @@ static ARAppDelegate *_sharedInstance = nil;
     return _sharedInstance;
 }
 
-// These methods are swizzled during unit tests. See ARAppDelegate(Testing).
-
-
 - (BOOL)application:(UIApplication *)application willFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    _sharedInstance = self;
-
     if (ARIsRunningInDemoMode) {
         [ARUserManager clearUserData];
     }
@@ -125,12 +127,19 @@ static ARAppDelegate *_sharedInstance = nil;
     if (ARIsRunningInDemoMode) {
         [self.viewController presentViewController:[[ARDemoSplashViewController alloc] init] animated:NO completion:nil];
         [self performSelector:@selector(finishDemoSplash) withObject:nil afterDelay:1];
+
     } else if (showOnboarding) {
         [self fetchSiteFeatures];
-        [self showTrialOnboardingWithState:ARInitialOnboardingStateSlideShow andContext:ARTrialContextNotTrial];
+
+        // Do not show the splash/onboarding when a user comes in through a user activity, as it breaks the expectation
+        // of the user to see the activity. This is probably just an edge-case, most people will probably launch the app
+        // after installing it.
+        if (launchOptions[UIApplicationLaunchOptionsUserActivityDictionaryKey] == nil) {
+            [self showTrialOnboarding];
+        }
     }
 
-    ARShowFeedViewController *topVC = (id)ARTopMenuViewController.sharedController.rootNavigationController.topViewController;
+    ARSimpleShowFeedViewController *topVC = (id)ARTopMenuViewController.sharedController.rootNavigationController.topViewController;
     [ArtsyAPI getXappTokenWithCompletion:^(NSString *xappToken, NSDate *expirationDate) {
         // Sync clock with server
         [ARSystemTime sync];
@@ -145,6 +154,9 @@ static ARAppDelegate *_sharedInstance = nil;
         // when the user does sign-in, this will be ran again and the device will be associated with the user account.
         if (!showOnboarding) {
             [self.remoteNotificationsDelegate registerForDeviceNotifications];
+            if ([User currentUser]) {
+                [ARSpotlight indexAllUsersFavorites];
+            };
         }
 
         NSDictionary *remoteNotification = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
@@ -154,6 +166,8 @@ static ARAppDelegate *_sharedInstance = nil;
                                                                    inApplicationState:UIApplicationStateInactive];
         }
     }];
+
+    [ARWebViewCacheHost startup];
 
     return YES;
 }
@@ -178,6 +192,11 @@ static ARAppDelegate *_sharedInstance = nil;
 - (ARAppNotificationsDelegate *)remoteNotificationsDelegate;
 {
     return [[JSDecoupledAppDelegate sharedAppDelegate] remoteNotificationsDelegate];
+}
+
+- (void)showTrialOnboarding;
+{
+    [self showTrialOnboardingWithState:ARInitialOnboardingStateSlideShow andContext:ARTrialContextNotTrial];
 }
 
 - (void)finishDemoSplash
@@ -210,9 +229,10 @@ static ARAppDelegate *_sharedInstance = nil;
 
     if (!cancelledSignIn) {
         ar_dispatch_main_queue(^{
+            [self.remoteNotificationsDelegate registerForDeviceNotifications];
             if ([User currentUser]) {
-                [self.remoteNotificationsDelegate registerForDeviceNotifications];
                 [self.remoteNotificationsDelegate fetchNotificationCounts];
+                [ARSpotlight indexAllUsersFavorites];
             }
         });
     }
@@ -416,6 +436,7 @@ static ARAppDelegate *_sharedInstance = nil;
     NSInteger numberOfRuns = [[NSUserDefaults standardUserDefaults] integerForKey:ARAnalyticsAppUsageCountProperty] + 1;
     if (numberOfRuns == 1) {
         [ARAnalytics event:ARAnalyticsFreshInstall];
+        [Adjust trackEvent:[ADJEvent eventWithEventToken:ARAdjustFirstUserInstall]];
     }
 
     [[NSUserDefaults standardUserDefaults] setInteger:numberOfRuns forKey:ARAnalyticsAppUsageCountProperty];

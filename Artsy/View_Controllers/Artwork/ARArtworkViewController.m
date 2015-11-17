@@ -6,6 +6,7 @@
 #import "ARPostsViewController.h"
 #import "ARArtworkView.h"
 #import "ARArtworkViewController+ButtonActions.h"
+#import "UIViewController+ARUserActivity.h"
 
 
 @interface ARArtworkViewController () <UIScrollViewDelegate, ARArtworkRelatedArtworksViewParentViewController, ARArtworkBlurbViewDelegate, ARPostsViewControllerDelegate>
@@ -74,11 +75,12 @@
         [self ar_removeIndeterminateLoadingIndicatorAnimated:ARPerformWorkAsynchronously];
     }
 
-    @_weakify(self);
+    @weakify(self);
 
     void (^completion)(void) = ^{
-        @_strongify(self);
+        @strongify(self);
         [self ar_removeIndeterminateLoadingIndicatorAnimated:ARPerformWorkAsynchronously];
+        [self ar_setDataLoaded];
     };
 
     [self.artwork onArtworkUpdate:^{
@@ -102,6 +104,14 @@
     [super viewDidAppear:ARPerformWorkAsynchronously && animated];
     CGRect frame = self.view.frame;
     [self.view.metadataView updateConstraintsIsLandscape:CGRectGetWidth(frame) > CGRectGetHeight(frame)];
+
+    self.ar_userActivityEntity = self.artwork;
+}
+
+- (void)viewWillDisappear:(BOOL)animated;
+{
+    [super viewWillDisappear:animated];
+    [self.userActivity invalidate];
 }
 
 - (void)viewDidDisappear:(BOOL)animated
@@ -129,9 +139,9 @@
 
 - (void)getRelatedPosts
 {
-    @_weakify(self);
+    @weakify(self);
     [self.artwork getRelatedPosts:^(NSArray *posts) {
-        @_strongify(self);
+        @strongify(self);
         [self updateWithRelatedPosts:posts];
     }];
 }
@@ -200,7 +210,7 @@
     }];
 }
 
-- (NSUInteger)supportedInterfaceOrientations
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
     return [UIDevice isPad] ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskPortrait;
 }

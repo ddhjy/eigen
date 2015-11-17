@@ -9,7 +9,8 @@
 #import "ARGeneArtworksNetworkModel.h"
 #import "ARArtworkSetViewController.h"
 #import "ORStackView+ArtsyViews.h"
-
+#import "UIViewController+ARUserActivity.h"
+#import <FLKAutoLayout/UIViewController+FLKAutoLayout.h>
 
 @interface ARGeneViewController () <AREmbeddedModelsDelegate, UIScrollViewDelegate, ARTextViewDelegate, ARArtworkMasonryLayoutProvider>
 
@@ -84,14 +85,31 @@
     [self updateBody];
 }
 
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+
+    self.artworksViewController.collectionView.scrollsToTop = YES;
+    [self.view setNeedsLayout];
+    [self.view layoutIfNeeded];
+
+    self.ar_userActivityEntity = self.gene;
+}
+
+- (void)viewWillDisappear:(BOOL)animated;
+{
+    [super viewWillDisappear:animated];
+    [self.userActivity invalidate];
+}
 
 - (void)loadGene
 {
-    @_weakify(self);
+    @weakify(self);
     [self.gene updateGene:^{
-        @_strongify(self);
+        @strongify(self);
         [self ar_removeIndeterminateLoadingIndicatorAnimated:ARPerformWorkAsynchronously];
         [self updateBody];
+        [self ar_setDataLoaded];
 
         if (self.gene.geneDescription.length == 0) {
             [self.headerContainerView removeSubview:self.descriptionTextView];
@@ -148,14 +166,6 @@
     self.artworksViewController.collectionView.showsVerticalScrollIndicator = YES;
 }
 
-- (void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-    self.artworksViewController.collectionView.scrollsToTop = YES;
-    [self.view setNeedsLayout];
-    [self.view layoutIfNeeded];
-}
-
 - (void)getNextGeneArtworks
 {
     [self.artworkCollection getNextArtworkPage:^(NSArray *artworks) {
@@ -181,12 +191,10 @@
     BOOL hearted = !sender.hearted;
     [sender setHearted:hearted animated:ARPerformWorkAsynchronously];
 
-    [ArtsyAPI setFavoriteStatus:sender.isHearted forGene:self.gene success:^(id response) {
-    }
-        failure:^(NSError *error) {
+    [self.gene setFollowState:hearted success:nil failure:^(NSError *error) {
         [ARNetworkErrorManager presentActiveError:error withMessage:@"Failed to follow category."];
         [sender setHearted:!hearted animated:ARPerformWorkAsynchronously];
-        }];
+    }];
 }
 
 - (void)updateBody

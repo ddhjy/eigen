@@ -1,6 +1,7 @@
 #import "ARArtworkAuctionPriceView.h"
 #import "ARArtworkPriceRowView.h"
-@import Artsy_UILabels;
+#import <Artsy+UILabels/UIView+ARDrawing.h>
+#import <Artsy+UILabels/NSNumberFormatter+ARCurrency.h>
 
 
 @implementation ARArtworkAuctionPriceView
@@ -13,7 +14,7 @@
     row.messageLabel.font = [UIFont serifSemiBoldFontWithSize:16];
 
     NSNumber *cents = hasBids ? saleArtwork.saleHighestBid.cents : saleArtwork.openingBidCents;
-    row.priceLabel.text = [NSNumberFormatter currencyStringForCents:cents];
+    row.priceLabel.text = [NSNumberFormatter currencyStringForDollarCents:cents];
     row.priceLabel.font = [UIFont sansSerifFontWithSize:24];
 
     row.margin = 16;

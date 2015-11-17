@@ -2,7 +2,7 @@
 #import "ARNavigationController.h"
 #import "ARBrowseViewController.h"
 #import "ARFavoritesViewController.h"
-#import "ARShowFeedViewController.h"
+#import "ARSimpleShowFeedViewController.h"
 #import "ArtsyAPI.h"
 #import "ArtsyAPI+Artworks.h"
 
@@ -25,7 +25,7 @@ before(^{
 it(@"uses a single feed vc", ^{
     ARNavigationController *navigationController = [navDataSource feedNavigationController];
     UIViewController *rootVC = [[navigationController viewControllers] objectAtIndex:0];
-    expect(rootVC).to.beKindOf([ARShowFeedViewController class]);
+    expect(rootVC).to.beKindOf([ARSimpleShowFeedViewController class]);
 
     ARNavigationController *newNavigationController = [navDataSource feedNavigationController];
     UIViewController *newRootVC = [[newNavigationController viewControllers] objectAtIndex:0];
@@ -69,4 +69,22 @@ it(@"reinstantiates favorites vc", ^{
     expect(newRootVC).notTo.equal(rootVC);
 });
 
-SpecEnd
+describe(@"notifications", ^{
+    it(@"sets the app icon badge to the total amount of available notifications", ^{
+        id appMock = [OCMockObject partialMockForObject:[UIApplication sharedApplication]];
+        [[appMock expect] setApplicationIconBadgeNumber:2];
+        [navDataSource setNotificationCount:1 forControllerAtIndex:ARTopTabControllerIndexFeed];
+        [navDataSource setNotificationCount:1 forControllerAtIndex:ARTopTabControllerIndexNotifications];
+        [appMock verify];
+    });
+    
+    it(@"resets the app icon badge if there are 0 notifications", ^{
+        id appMock = [OCMockObject partialMockForObject:[UIApplication sharedApplication]];
+        [[appMock expect] setApplicationIconBadgeNumber:0];
+        [[UIApplication sharedApplication] setApplicationIconBadgeNumber:42];
+        [navDataSource setNotificationCount:0 forControllerAtIndex:ARTopTabControllerIndexNotifications];
+        [appMock verify];
+    });
+});
+
+SpecEnd;

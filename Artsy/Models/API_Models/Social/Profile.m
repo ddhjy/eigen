@@ -58,11 +58,11 @@
 
 - (void)updateProfile:(void (^)(void))success
 {
-    @_weakify(self);
+    @weakify(self);
 
     if (self.profileID) {
         [ArtsyAPI getProfileForProfileID:self.profileID success:^(Profile *profile) {
-            @_strongify(self);
+            @strongify(self);
 
             [self mergeValuesForKeysFromModel:profile];
             success();
@@ -77,19 +77,15 @@
 
 - (NSString *)iconURL
 {
-    NSString *iconURL = nil;
     if (self.iconURLs.count > 0) {
         if (self.iconVersion && [self.iconURLs objectForKey:self.iconVersion]) {
-            iconURL = [self.iconURLs objectForKey:self.iconVersion];
+            return [self.iconURLs objectForKey:self.iconVersion];
         } else {
             NSArray *values = [self.iconURLs allValues];
-            iconURL = [values objectAtIndex:0];
-            ;
+            return [values objectAtIndex:0];
         }
-        return iconURL;
-    } else {
-        return nil;
     }
+    return nil;
 }
 
 - (NSString *)description

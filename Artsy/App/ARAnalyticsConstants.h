@@ -42,6 +42,7 @@ extern NSString *const ARAnalyticsOnboardingCompleted;
 extern NSString *const ARAnalyticsSignInEmail;
 extern NSString *const ARAnalyticsSignInTwitter;
 extern NSString *const ARAnalyticsSignInFacebook;
+extern NSString *const ARAnalyticsSignInWebCredentials;
 extern NSString *const ARAnalyticsSignInError;
 
 // Sign up
@@ -149,3 +150,10 @@ extern NSString *const ARAnalyticsFairMapPartnerShowTapped;
 
 extern NSString *const ARAnalyticsAuctionBidTapped;
 extern NSString *const ARAnalyticsAuctionHowBiddingWorks;
+
+// Adjust's unique events
+
+extern NSString *const ARAdjustCreatedAnAccount;
+extern NSString *const ARAdjustSentArtworkInquiry;
+extern NSString *const ARAdjustFirstUserInstall;
+extern NSString *const ARAdjustTappedBidButton;

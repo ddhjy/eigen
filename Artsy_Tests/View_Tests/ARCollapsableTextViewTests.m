@@ -1,4 +1,4 @@
-@import FLKAutoLayout;
+#import <FLKAutoLayout/UIView+FLKAutoLayout.h>
 #import "ARCollapsableTextView.h"
 
 
@@ -80,4 +80,4 @@ describe(@"text is taller than collapsed height", ^{
 
 });
 
-SpecEnd
+SpecEnd;

@@ -1,5 +1,5 @@
 #import "ARNetworkConstants.h"
-
+#import "ARSpotlight.h"
 
 @interface Artist () {
     BOOL _isFollowed;
@@ -69,15 +69,16 @@
 
 - (void)setFollowState:(BOOL)state success:(void (^)(id))success failure:(void (^)(NSError *))failure
 {
-    @_weakify(self);
+    @weakify(self);
     [ArtsyAPI setFavoriteStatus:state forArtist:self success:^(id response) {
-        @_strongify(self);
+        @strongify(self);
         self.followed = state;
+        [ARSpotlight addToSpotlightIndex:state entity:self];
         if (success) {
             success(response);
         }
     } failure:^(NSError *error) {
-        @_strongify(self);
+        @strongify(self);
         self.followed = !state;
         if (failure) {
             failure(error);
@@ -92,9 +93,9 @@
         return;
     }
 
-    @_weakify(self);
+    @weakify(self);
     [ArtsyAPI checkFavoriteStatusForArtist:self success:^(BOOL result) {
-        @_strongify(self);
+        @strongify(self);
         self.followed = result;
         success(result ? ARHeartStatusYes : ARHeartStatusNo);
     } failure:failure];
@@ -149,9 +150,32 @@
 }
 
 #pragma mark ShareableObject
+
+- (NSString *)publicArtsyID;
+{
+    return self.artistID;
+}
+
 - (NSString *)publicArtsyPath
 {
     return [NSString stringWithFormat:@"/artist/%@", self.artistID];
+}
+
+#pragma mark - ARSpotlightMetadataProvider
+
+- (NSString *)spotlightDescription;
+{
+    return self.blurb.length > 0 ? nil : self.birthday;
+}
+
+- (NSString *)spotlightMarkdownDescription;
+{
+    return self.blurb;
+}
+
+- (NSURL *)spotlightThumbnailURL;
+{
+    return self.squareImageURL;
 }
 
 @end

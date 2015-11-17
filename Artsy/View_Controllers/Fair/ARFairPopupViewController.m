@@ -12,14 +12,20 @@
 
 @implementation ARFairPopupViewController
 
+AR_VC_OVERRIDE_SUPER_DESIGNATED_INITIALIZERS;
+
 - (instancetype)initWithFair:(Fair *)fair
 {
-    return [self initWithFairTitle:fair.name imageBackgroundURL:[NSURL URLWithString:fair.bannerAddress] slug:fair.fairID];
+    return [self initWithFairTitle:fair.name
+                imageBackgroundURL:[NSURL URLWithString:fair.bannerAddress]
+                              slug:fair.fairID];
 }
 
-- (instancetype)initWithFairTitle:(NSString *)title imageBackgroundURL:(NSURL *)url slug:(NSString *)slug
+- (instancetype)initWithFairTitle:(NSString *)title
+               imageBackgroundURL:(NSURL *)url
+                             slug:(NSString *)slug
 {
-    self = [super init];
+    self = [super initWithNibName:nil bundle:nil];
     if (!self) {
         return nil;
     }
@@ -64,7 +70,7 @@
     }];
 }
 
-- (void)animateOut:(BOOL)animated:(void (^)())completion
+- (void)animateOut:(BOOL)animated :(void (^)())completion
 {
     NSParameterAssert(completion);
 
@@ -79,7 +85,7 @@
 
 - (void)dismissPopover
 {
-    [self animateOut:YES:^{
+    [self animateOut:YES :^{
         [self.presentingViewController dismissViewControllerAnimated:NO completion:nil];
     }];
 }

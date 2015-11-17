@@ -25,6 +25,8 @@ const CGFloat ARParallaxHeaderViewIconImageViewDimension = 80.0f;
 
 @implementation ARParallaxHeaderViewController
 
+AR_VC_OVERRIDE_SUPER_DESIGNATED_INITIALIZERS;
+
 - (instancetype)initWithContainingScrollView:(UIScrollView *)containingScrollView fair:(id)fair profile:(Profile *)profile
 {
     self = [super initWithNibName:nil bundle:nil];
@@ -118,9 +120,9 @@ const CGFloat ARParallaxHeaderViewIconImageViewDimension = 80.0f;
     }
 
     if (![self hasNewStyledBanner] && [self hasIconImage]) {
-       @_weakify(self);
+       @weakify(self);
         [self.iconImageView ar_setImageWithURL:[NSURL URLWithString:[self.profile iconURL]] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
-            @_strongify(self);
+            @strongify(self);
             if (image) {
                 [self.iconImageView alignBottomEdgeWithView:self.view predicate:@"0"];
                 [self.iconImageView alignLeadingEdgeWithView:self.view predicate:@"20"];

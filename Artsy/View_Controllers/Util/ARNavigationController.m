@@ -133,7 +133,7 @@ static void *ARNavigationControllerScrollingChiefContext = &ARNavigationControll
     return self.topViewController.shouldAutorotate;
 }
 
-- (NSUInteger)supportedInterfaceOrientations
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
     return self.topViewController.supportedInterfaceOrientations ?: ([UIDevice isPad] ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskAllButUpsideDown);
 }
@@ -378,10 +378,10 @@ ShouldHideItem(UIViewController *viewController, SEL itemSelector, ...)
     }
     [self ar_addModernChildViewController:self.pendingOperationViewController];
 
-    @_weakify(self);
+    @weakify(self);
 
     return [[RACCommand alloc] initWithSignalBlock:^RACSignal *(id input) {
-        @_strongify(self);
+        @strongify(self);
         RACSubject *completionSubject = [RACSubject subject];
 
         [UIView animateIf:self.animatesLayoverChanges duration:ARAnimationDuration :^{
@@ -467,12 +467,22 @@ ShouldHideItem(UIViewController *viewController, SEL itemSelector, ...)
 
 - (IBAction)search:(id)sender;
 {
+    // Attempt to fix problem of crash https://rink.hockeyapp.net/manage/apps/37029/app_versions/41/crash_reasons/46749845?type=overview
+    // If you rapidly press the search/close buttons, you will get a crash pushing the same VC twice
+    self.searchButton.enabled = NO;
+
     if (self.searchViewController == nil) {
         self.searchViewController = [ARAppSearchViewController sharedSearchViewController];
     }
     UINavigationController *navigationController = self.ar_innermostTopViewController.navigationController;
+
+    [CATransaction begin];
     [navigationController pushViewController:self.searchViewController
                                     animated:ARPerformWorkAsynchronously];
+    [CATransaction setCompletionBlock:^{
+        self.searchButton.enabled = YES;
+    }];
+    [CATransaction commit];
 }
 
 @end

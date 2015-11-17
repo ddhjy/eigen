@@ -3,20 +3,19 @@
 #import <ARAnalytics/ARAnalytics.h>
 #import "ARAnalyticsConstants.h"
 #import "UIViewController+SimpleChildren.h"
-@import FLKAutoLayout;
+#import <FLKAutoLayout/UIView+FLKAutoLayout.h>
 #import "ARFairViewController.h"
 #import "ARInternalMobileWebViewController.h"
 
 
 @interface ARProfileViewControllerTestsConcreteLayoutGuide : NSObject <UILayoutSupport>
-
 @property (nonatomic, assign) CGFloat length;
-
+@property (atomic, strong) NSLayoutYAxisAnchor *topAnchor;
+@property (atomic, strong) NSLayoutYAxisAnchor *bottomAnchor;
+@property (atomic, strong) NSLayoutDimension *heightAnchor;
 @end
 
-
 @implementation ARProfileViewControllerTestsConcreteLayoutGuide
-
 @end
 
 
@@ -280,4 +279,4 @@ describe(@"showViewController:", ^{
     });
 });
 
-SpecEnd
+SpecEnd;

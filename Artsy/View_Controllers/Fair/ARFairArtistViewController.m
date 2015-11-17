@@ -37,9 +37,11 @@ typedef NS_ENUM(NSInteger, ARFairArtistViewIndex) {
 
 @dynamic view;
 
+AR_VC_OVERRIDE_SUPER_DESIGNATED_INITIALIZERS;
+
 - (instancetype)initWithArtistID:(NSString *)artistID fair:(Fair *)fair
 {
-    self = [super init];
+    self = [super initWithNibName:nil bundle:nil];
     _fair = fair;
     _artist = [[Artist alloc] initWithArtistID:artistID];
     _networkModel = [[ARFairArtistNetworkModel alloc] init];
@@ -53,14 +55,14 @@ typedef NS_ENUM(NSInteger, ARFairArtistViewIndex) {
     self.view.stackView.bottomMarginHeight = 20;
     self.view.delegate = [ARScrollNavigationChief chief];
 
-    @_weakify(self);
+    @weakify(self);
     [self.networkModel getArtistForArtistID:self.artist.artistID success:^(Artist *artist) {
-        @_strongify(self);
+        @strongify(self);
         if (!self) { return; }
         self->_artist = artist;
         [self artistDidLoad];
     } failure:^(NSError *error) {
-        @_strongify(self);
+        @strongify(self);
         [self artistDidLoad];
     }];
 }
@@ -70,7 +72,7 @@ typedef NS_ENUM(NSInteger, ARFairArtistViewIndex) {
     return NO;
 }
 
-- (NSUInteger)supportedInterfaceOrientations
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
     return [UIDevice isPad] ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskAllButUpsideDown;
 }
@@ -83,9 +85,9 @@ typedef NS_ENUM(NSInteger, ARFairArtistViewIndex) {
 
     [self addSubtitle];
 
-    @_weakify(self);
+    @weakify(self);
     [self.networkModel getShowsForArtistID:self.artist.artistID inFairID:self.fair.fairID success:^(NSArray *shows) {
-        @_strongify(self);
+        @strongify(self);
         if (!self) { return; }
 
         self->_partnerShows = shows;
@@ -156,9 +158,9 @@ typedef NS_ENUM(NSInteger, ARFairArtistViewIndex) {
 
 - (void)addMapButton
 {
-    @_weakify(self);
+    @weakify(self);
     [self.fair getFairMaps:^(NSArray *maps) {
-        @_strongify(self);
+        @strongify(self);
 
         Map *map = maps.firstObject;
         if (!map) { return; }
@@ -183,9 +185,9 @@ typedef NS_ENUM(NSInteger, ARFairArtistViewIndex) {
 
 - (void)mapButtonTapped:(id)mapButtonTapped
 {
-    @_weakify(self);
+    @weakify(self);
     [self.fair getFairMaps:^(NSArray *maps) {
-        @_strongify(self);
+        @strongify(self);
         ARFairMapViewController *viewController = [[ARSwitchBoard sharedInstance] loadMapInFair:self.fair title:self.header selectedPartnerShows:self.partnerShows];
         [self.navigationController pushViewController:viewController animated:ARPerformWorkAsynchronously];
     }];

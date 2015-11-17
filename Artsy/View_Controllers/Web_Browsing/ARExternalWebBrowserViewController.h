@@ -1,14 +1,19 @@
-@import TSMiniWebBrowser_dblock;
+#import <WebKit/WebKit.h>
 
 
-@interface ARExternalWebBrowserViewController : TSMiniWebBrowser <UIScrollViewDelegate>
+@interface ARExternalWebBrowserViewController : UIViewController <WKNavigationDelegate>
+
+@property (readonly, nonatomic, strong) WKWebView *webView;
 @property (readonly, nonatomic, strong) UIScrollView *scrollView;
+@property (nonatomic, readonly, strong) NSURL *initialURL;
 
+- (instancetype)initWithURL:(NSURL *)url;
 
-- (instancetype)initWithURL:(NSURL *)url __attribute((objc_designated_initializer));
+- (NSURL *)currentURL;
+- (void)loadURL:(NSURL *)URL;
+- (void)reload;
 
-// TSMiniBrowser setup doesn't happen if you don't use initWithURL.
-// Initializing without an NSURL also causes problems in tests.
-- (instancetype)init __attribute__((unavailable("Designated Initializer initWithURL: must be used.")));
+// This hook is exposed for subclasses to be able to make decisions as to how to handle the navigation action.
+- (WKNavigationActionPolicy)shouldLoadNavigationAction:(WKNavigationAction *)navigationAction;
 
 @end

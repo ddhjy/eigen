@@ -1,4 +1,4 @@
-
+#import "ARSpotlight.h"
 
 
 @interface Gene () {
@@ -54,9 +54,9 @@
 
 - (void)updateGene:(void (^)(void))success
 {
-    @_weakify(self);
+    @weakify(self);
     [ArtsyAPI getGeneForGeneID:self.geneID success:^(id gene) {
-        @_strongify(self);
+        @strongify(self);
         [self mergeValuesForKeysFromModel:gene];
         success();
     } failure:^(NSError *error) {
@@ -86,15 +86,16 @@
 
 - (void)setFollowState:(BOOL)state success:(void (^)(id))success failure:(void (^)(NSError *))failure
 {
-    @_weakify(self);
+    @weakify(self);
     [ArtsyAPI setFavoriteStatus:state forGene:self success:^(id response) {
-        @_strongify(self);
+        @strongify(self);
         self.followed = state;
+        [ARSpotlight addToSpotlightIndex:state entity:self];
         if (success) {
             success(response);
         }
     } failure:^(NSError *error) {
-        @_strongify(self);
+        @strongify(self);
         self.followed = !state;
         if (failure) {
             failure(error);
@@ -109,9 +110,9 @@
         return;
     }
 
-    @_weakify(self);
+    @weakify(self);
     [ArtsyAPI checkFavoriteStatusForGene:self success:^(BOOL result) {
-        @_strongify(self);
+        @strongify(self);
         self.followed = result;
         success(result ? ARHeartStatusYes : ARHeartStatusNo);
     } failure:failure];
@@ -144,9 +145,31 @@
 
 #pragma mark ShareableObject
 
+- (NSString *)publicArtsyID;
+{
+    return self.geneID;
+}
+
 - (NSString *)publicArtsyPath
 {
     return [NSString stringWithFormat:@"/gene/%@", self.geneID];
+}
+
+#pragma mark - ARSpotlightMetadataProvider
+
+- (NSString *)spotlightDescription;
+{
+    return self.geneDescription.length > 0 ? nil : @"Category on Artsy";
+}
+
+- (NSString *)spotlightMarkdownDescription;
+{
+    return self.geneDescription;
+}
+
+- (NSURL *)spotlightThumbnailURL;
+{
+    return self.smallImageURL;
 }
 
 @end

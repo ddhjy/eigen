@@ -30,7 +30,7 @@
     ARFairOrganizerFeed *postsFeed = [[ARFairOrganizerFeed alloc] initWithFairOrganizer:fair.organizer];
     ARFeedTimeline *postsFeedTimeline = [[ARFeedTimeline alloc] initWithFeed:postsFeed];
 
-    [postsFeedTimeline getNewItems:^{
+    [postsFeedTimeline getNewItems:^(NSArray *items) {
         success(postsFeedTimeline);
     } failure:^(NSError *error) {
         success (postsFeedTimeline);
@@ -44,10 +44,10 @@
 
 - (void)getMapInfoForFair:(Fair *)fair success:(void (^)(NSArray *))success failure:(void (^)(NSError *))failure
 {
-   @_weakify(fair);
+    @weakify(fair);
 
     [ArtsyAPI getMapInfoForFair:fair success:^(NSArray *maps) {
-        @_strongify(fair);
+        @strongify(fair);
         if (!fair) { return; }
         fair.maps = maps;
         if (success) {

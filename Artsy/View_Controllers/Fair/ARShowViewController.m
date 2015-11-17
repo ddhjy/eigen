@@ -13,6 +13,7 @@
 #import "ARShowNetworkModel.h"
 #import "ORStackView+ArtsyViews.h"
 #import "ARFairMapPreviewButton.h"
+#import "UIViewController+ARUserActivity.h"
 
 typedef NS_ENUM(NSInteger, ARFairShowViewIndex) {
     ARFairShowViewHeader = 1,
@@ -121,6 +122,8 @@ static const NSInteger ARFairShowMaximumNumberOfHeadlineImages = 5;
 
     CGFloat parentHeight = CGRectGetHeight(self.parentViewController.view.bounds) ?: CGRectGetHeight([UIScreen mainScreen].bounds);
     [self.view.stackView ensureScrollingWithHeight:parentHeight tag:ARFairShowViewWhitespaceGobbler];
+
+    [self ar_setDataLoaded];
 }
 
 - (void)addActionButtonsToStack
@@ -151,21 +154,22 @@ self.actionButtonsView.actionButtonDescriptions = descriptions;
 
 - (NSDictionary *)descriptionForMapButton
 {
-    @_weakify(self);
+    @weakify(self);
     return @{
         ARActionButtonImageKey : @"MapButtonAction",
         ARActionButtonHandlerKey : ^(ARCircularActionButton *sender){
-            @_strongify(self);
-            [self handleMapButtonPress:sender];
-        }
-    };
+            @strongify(self);
+    [self handleMapButtonPress:sender];
+}
+}
+;
 }
 
 - (void)handleMapButtonPress:(ARCircularActionButton *)sender
 {
-    @_weakify(self);
+    @weakify(self);
     [self.showNetworkModel getFairMaps:^(NSArray *maps) {
-        @_strongify(self);
+        @strongify(self);
         ARFairMapViewController *viewController = [[ARSwitchBoard sharedInstance] loadMapInFair:self.fair title:self.show.title selectedPartnerShows:@[self.show]];
         [self.navigationController pushViewController:viewController animated:ARPerformWorkAsynchronously];
     }];
@@ -211,9 +215,9 @@ self.actionButtonsView.actionButtonDescriptions = descriptions;
 
     [self ar_presentIndeterminateLoadingIndicatorAnimated:ARPerformWorkAsynchronously];
 
-    @_weakify(self);
+    @weakify(self);
     [self.showNetworkModel getShowInfo:^(PartnerShow *show) {
-        @_strongify(self);
+        @strongify(self);
         if (!self) { return; }
 
         [self.show mergeValuesForKeysFromModel:show];
@@ -224,10 +228,22 @@ self.actionButtonsView.actionButtonDescriptions = descriptions;
 
         [self showDidLoad];
     } failure:^(NSError *error) {
-        @_strongify(self);
+        @strongify(self);
 
         [self showDidLoad];
     }];
+}
+
+- (void)viewDidAppear:(BOOL)animated;
+{
+    [super viewDidAppear:animated];
+    self.ar_userActivityEntity = self.show;
+}
+
+- (void)viewWillDisappear:(BOOL)animated;
+{
+    [super viewWillDisappear:animated];
+    [self.userActivity invalidate];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
@@ -353,9 +369,9 @@ self.actionButtonsView.actionButtonDescriptions = descriptions;
     self.showArtworksViewController.showTrailingLoadingIndicator = YES;
     [self.view.stackView addViewController:self.showArtworksViewController toParent:self withTopMargin:@"0" sideMargin:nil];
 
-    @_weakify(self);
+    @weakify(self);
     [self getArtworksAtPage:1 onArtworks:^(NSArray *artworks) {
-        @_strongify(self);
+        @strongify(self);
         if (artworks.count > 0) {
             [self.showArtworksViewController appendItems:artworks];
         } else {
@@ -369,9 +385,9 @@ self.actionButtonsView.actionButtonDescriptions = descriptions;
 {
     NSParameterAssert(onArtworks);
 
-    @_weakify(self);
+    @weakify(self);
     [self.showNetworkModel getArtworksAtPage:page success:^(NSArray *artworks) {
-        @_strongify(self);
+        @strongify(self);
         onArtworks(artworks);
         if (artworks.count > 0) {
             [self getArtworksAtPage:page + 1 onArtworks:onArtworks];
@@ -400,9 +416,9 @@ self.actionButtonsView.actionButtonDescriptions = descriptions;
 
 - (void)addMapPreview
 {
-    @_weakify(self);
+    @weakify(self);
     [self.showNetworkModel getFairMaps:^(NSArray *maps) {
-        @_strongify(self);
+        @strongify(self);
 
         Map *map = maps.firstObject;
         if (!map) { return; }
@@ -479,7 +495,7 @@ self.actionButtonsView.actionButtonDescriptions = descriptions;
     return [UIDevice isPad];
 }
 
-- (NSUInteger)supportedInterfaceOrientations
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
     return [UIDevice isPad] ? UIInterfaceOrientationMaskAll : UIInterfaceOrientationMaskAllButUpsideDown;
 }

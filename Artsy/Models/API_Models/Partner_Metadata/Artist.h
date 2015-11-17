@@ -1,10 +1,11 @@
-#import <Mantle/Mantle.h>
 #import "ARFollowable.h"
 #import "ARShareableObject.h"
 #import "ARHasImageBaseURL.h"
+#import "ARSpotlight.h"
 
+#import <Mantle/Mantle.h>
 
-@interface Artist : MTLModel <MTLJSONSerializing, ARFollowable, ARShareableObject, ARHasImageURLs>
+@interface Artist : MTLModel <MTLJSONSerializing, ARFollowable, ARShareableObject, ARHasImageURLs, ARSpotlightMetadataProvider>
 
 @property (readonly, nonatomic, copy) NSString *artistID;
 @property (readonly, nonatomic, copy) NSString *name;

@@ -13,6 +13,8 @@
 #import "ARArtworkSetViewController.h"
 #import "ARTextView.h"
 #import "ARArtistNetworkModel.h"
+#import "ARSpotlight.h"
+#import "UIViewController+ARUserActivity.h"
 
 static const NSInteger ARMinimumArtworksFor2Column = 5;
 
@@ -102,10 +104,10 @@ typedef NS_ENUM(NSInteger, ARArtistArtworksDisplayMode) {
 
 - (void)updateArtistInfo
 {
-    @_weakify(self);
+    @weakify(self);
     [self.networkModel getArtistInfoWithSuccess:^(Artist *artist) {
 
-        @_strongify(self);
+        @strongify(self);
         if (!self) { return; }
 
         if (!artist) {
@@ -118,7 +120,7 @@ typedef NS_ENUM(NSInteger, ARArtistArtworksDisplayMode) {
         [self artistIsReady];
 
     } failure:^(NSError *error) {
-        @_strongify(self);
+        @strongify(self);
         ARErrorLog(@"Could not update artist information: %@", error.localizedDescription);
         [self setIsGettingArtworks:NO displayMode:self.displayMode];
     }];
@@ -211,6 +213,18 @@ typedef NS_ENUM(NSInteger, ARArtistArtworksDisplayMode) {
     [self setArtworksHeight];
 }
 
+- (void)viewDidAppear:(BOOL)animated;
+{
+    [super viewDidAppear:animated];
+    self.ar_userActivityEntity = self.artist;
+}
+
+- (void)viewWillDisappear:(BOOL)animated;
+{
+    [super viewWillDisappear:animated];
+    [self.userActivity invalidate];
+}
+
 - (void)updateWithArtist
 {
     [self.nameLabel setText:self.artist.name];
@@ -267,6 +281,8 @@ typedef NS_ENUM(NSInteger, ARArtistArtworksDisplayMode) {
             [self.view.stackView addSubview:bioButton withTopMargin:@"20" sideMargin:[self sideMarginString]];
         }
     }
+
+    [self ar_setDataLoaded];
 }
 
 - (void)prepareForNoArtworks
@@ -314,8 +330,12 @@ typedef NS_ENUM(NSInteger, ARArtistArtworksDisplayMode) {
     BOOL hearted = !sender.hearted;
     [sender setHearted:hearted animated:ARPerformWorkAsynchronously];
 
-    [self.networkModel setFavoriteStatus:sender.isHearted success:^(id response) {}
-    failure:^(NSError *error) {
+    Artist *artist = self.artist;
+    [self.networkModel setFavoriteStatus:hearted
+                                 success:^(id _) {
+        [ARSpotlight addToSpotlightIndex:hearted entity:artist];
+    }
+                                 failure:^(NSError *error) {
         [ARNetworkErrorManager presentActiveError:error withMessage:@"Failed to follow artist."];
         [sender setHearted:!hearted animated:ARPerformWorkAsynchronously];
     }];
@@ -392,14 +412,14 @@ typedef NS_ENUM(NSInteger, ARArtistArtworksDisplayMode) {
     BOOL showingForSale = (displayMode == ARArtistArtworksDisplayForSale);
     NSDictionary *params = (showingForSale) ? @{ @"filter[]" : @"for_sale" } : nil;
 
-    @_weakify(self);
+    @weakify(self);
     [self.networkModel getArtistArtworksAtPage:lastPage + 1 params:params success:^(NSArray *artworks) {
-        @_strongify(self);
+        @strongify(self);
         [self.artworkVC ar_removeIndeterminateLoadingIndicatorAnimated:ARPerformWorkAsynchronously];
         [self handleFetchedArtworks:artworks displayMode:self.displayMode];
         [self checkForAdditionalArtworksToFillView];
     } failure:^(NSError *error) {
-        @_strongify(self);
+        @strongify(self);
         ARErrorLog(@"Could not get Artist Artworks: %@", error.localizedDescription);
         [self.artworkVC ar_removeIndeterminateLoadingIndicatorAnimated:ARPerformWorkAsynchronously];
         [self setIsGettingArtworks:NO displayMode:displayMode];
@@ -555,9 +575,9 @@ typedef NS_ENUM(NSInteger, ARArtistArtworksDisplayMode) {
 
 - (void)getRelatedArtists
 {
-    @_weakify(self);
+    @weakify(self);
     [self.networkModel getRelatedArtists:^(NSArray *artists) {
-        @_strongify(self);
+        @strongify(self);
         if (artists.count > 0 ) {
             [UIView animateIf:ARPerformWorkAsynchronously duration:ARAnimationDuration :^{
                 self.relatedTitle.alpha = 1;
@@ -570,9 +590,9 @@ typedef NS_ENUM(NSInteger, ARArtistArtworksDisplayMode) {
 
 - (void)getRelatedPosts
 {
-    @_weakify(self);
+    @weakify(self);
     [self.networkModel getRelatedPosts:^(NSArray *posts) {
-        @_strongify(self);
+        @strongify(self);
         if (posts.count > 0) {
             self.postsVC.posts = posts;
             [self.view.stackView addSubview:self.postsVC.view withTopMargin:@"20" sideMargin:@"40"];

@@ -3,7 +3,7 @@
 #import "SearchResult.h"
 #import "ARSearchTableViewCell.h"
 #import "ARFileUtils.h"
-
+#import <AFNetworking/UIImageView+AFNetworking.h>
 
 @interface ARQuicksilverViewController ()
 
@@ -47,7 +47,10 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [self.searchDisplayController.searchResultsTableView reloadData];
+#pragma clang diagnostic pop
     [self.searchBar becomeFirstResponder];
 
     [self setHighlight:YES forCellAtIndex:self.selectedIndex];
@@ -81,7 +84,10 @@
 - (void)setHighlight:(BOOL)highlight forCellAtIndex:(NSInteger)index
 {
     NSIndexPath *path = [NSIndexPath indexPathForRow:index inSection:0];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     UITableViewCell *cell = [self.searchDisplayController.searchResultsTableView cellForRowAtIndexPath:path];
+#pragma clang diagnostic pop
 
     UIColor *background = highlight ? [UIColor darkGrayColor] : [UIColor blackColor];
     [cell setBackgroundColor:background];
@@ -97,7 +103,10 @@
         return;
     }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     UITableView *tableView = self.searchDisplayController.searchResultsTableView;
+#pragma clang diagnostic pop
     NSIndexPath *path = [NSIndexPath indexPathForRow:self.selectedIndex inSection:0];
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:path];
     [cell setBackgroundColor:[UIColor grayColor]];
@@ -118,7 +127,7 @@
 - (void)searchDisplayController:(UISearchDisplayController *)controller didHideSearchResultsTableView:(UITableView *)tableView
 {
     // We need to prevent the resultsTable from hiding if the search is still active
-    if (self.searchDisplayController.active == YES) {
+    if (controller.active == YES) {
         tableView.hidden = NO;
     }
 }
@@ -142,9 +151,9 @@
     } else {
         [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
 
-        @_weakify(self);
+        @weakify(self);
         _searchRequest = [ArtsyAPI searchWithQuery:query success:^(NSArray *results) {
-            @_strongify(self);
+            @strongify(self);
             self.searchResults = [results copy];
             self.selectedIndex = 0;
 
@@ -179,11 +188,11 @@
 
     UIImage *placeholder = [UIImage imageNamed:@"SearchThumb_LightGray"];
 
-    @_weakify(cell);
+    @weakify(cell);
     [cell.imageView setImageWithURLRequest:result.imageRequest placeholderImage:placeholder
 
                                    success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
-         @_strongify(cell);
+         @strongify(cell);
          cell.imageView.image = image;
          [cell layoutSubviews];
 
