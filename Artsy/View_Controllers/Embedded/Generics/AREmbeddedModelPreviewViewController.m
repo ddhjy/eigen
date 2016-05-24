@@ -122,7 +122,7 @@
     }
 
     if ([self.object respondsToSelector:@selector(defaultImage)]) {
-        Image *image = [self.object defaultImage];
+        Image *image = [self performSelector:@selector(defaultImages)];
         return CGSizeMake(image.originalWidth, image.originalHeight);
     }
 

@@ -100,6 +100,9 @@ target 'Artsy' do
   # Easter Eggs
   pod 'ARASCIISwizzle'
   pod 'DRKonamiCode'
+  
+  #  调试工具
+  pod 'FLEX', '~> 2.0', :configurations => ['Debug']
 end
 
 target 'Artsy Tests' do

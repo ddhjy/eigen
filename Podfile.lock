@@ -51,9 +51,9 @@ PODS:
   - ARGenericTableViewController (1.0.2)
   - ARTiledImageView (1.2):
     - SDWebImage/Core
+  - Artsy+OSSUIFonts (1.1.0)
   - Artsy+UIColors (1.0.0):
     - EDColor (~> 0.4)
-  - Artsy+UIFonts (1.1.0)
   - Artsy+UILabels (1.3.2):
     - Artsy+UIColors
   - Artsy-UIButtons (1.4.0):
@@ -92,13 +92,14 @@ PODS:
   - FBSDKLoginKit (4.2.0):
     - FBSDKCoreKit
   - FBSnapshotTestCase (1.8.1)
+  - FLEX (2.3.0)
   - FLKAutoLayout (0.2.1)
   - FODFormKit (0.1.1)
   - FXBlurView (1.6.1)
   - HockeySDK-Source (3.7.1)
   - InterAppCommunication (1.0)
   - iRate (1.10.2)
-  - ISO8601DateFormatter (HEAD based on 0.7)
+  - ISO8601DateFormatter (HEAD based on 0.8)
   - JLRoutes (1.5)
   - JSBadgeView (1.4.1)
   - JSDecoupledAppDelegate (1.1.0)
@@ -155,8 +156,8 @@ DEPENDENCIES:
   - ARCollectionViewMasonryLayout
   - ARGenericTableViewController
   - ARTiledImageView (from `https://github.com/dblock/ARTiledImageView`, commit `1a31b864d1d56b1aaed0816c10bb55cf2e078bb8`)
+  - Artsy+OSSUIFonts
   - Artsy+UIColors
-  - Artsy+UIFonts (from `https://github.com/artsy/Artsy-UIFonts.git`, branch `old_fonts_new_lib`)
   - Artsy+UILabels (>= 1.3.2)
   - Artsy-UIButtons
   - CocoaLumberjack (from `https://github.com/CocoaLumberjack/CocoaLumberjack.git`)
@@ -167,6 +168,7 @@ DEPENDENCIES:
   - FBSDKCoreKit
   - FBSDKLoginKit
   - FBSnapshotTestCase
+  - FLEX (~> 2.0)
   - FLKAutoLayout (from `https://github.com/alloy/FLKAutoLayout.git`, branch `add-support-for-layout-guides-take-2`)
   - FODFormKit (from `https://github.com/1aurabrown/FODFormKit.git`)
   - FXBlurView
@@ -206,9 +208,6 @@ EXTERNAL SOURCES:
   ARTiledImageView:
     :commit: 1a31b864d1d56b1aaed0816c10bb55cf2e078bb8
     :git: https://github.com/dblock/ARTiledImageView
-  Artsy+UIFonts:
-    :branch: old_fonts_new_lib
-    :git: https://github.com/artsy/Artsy-UIFonts.git
   CocoaLumberjack:
     :git: https://github.com/CocoaLumberjack/CocoaLumberjack.git
   FLKAutoLayout:
@@ -234,9 +233,6 @@ CHECKOUT OPTIONS:
   ARTiledImageView:
     :commit: 1a31b864d1d56b1aaed0816c10bb55cf2e078bb8
     :git: https://github.com/dblock/ARTiledImageView
-  Artsy+UIFonts:
-    :commit: 39f47deebf947aa4c07727fdf2b69e2feff17428
-    :git: https://github.com/artsy/Artsy-UIFonts.git
   CocoaLumberjack:
     :commit: a09dd37888d9f51159c4926d4280794f915d726c
     :git: https://github.com/CocoaLumberjack/CocoaLumberjack.git
@@ -268,8 +264,8 @@ SPEC CHECKSUMS:
   ARCollectionViewMasonryLayout: 776730bdedd0c7570a5e904c370e4e120f98ea62
   ARGenericTableViewController: 61a0897ba66c35111b5d1cc3b44884282bd3c1a5
   ARTiledImageView: 000af4093f9bdcd0f754e6ebd964c90641389f90
+  Artsy+OSSUIFonts: 4b01bb7451a35a877a055cefcdd92cffa2207781
   Artsy+UIColors: 7a4c987885a8d8da3e22672a3232761f929dd2b6
-  Artsy+UIFonts: 108bfe625c45008ebb15c4c62003882dd345c4b8
   Artsy+UILabels: 7efedaf4487a2545c750beaa29cb74db5de39d7f
   Artsy-UIButtons: 6f67de2a5285f18acb5d0e2919d1b17188acbc27
   Bolts: d176cb1e0012175589e389a9db49b85e27787576
@@ -282,13 +278,14 @@ SPEC CHECKSUMS:
   FBSDKCoreKit: 84b3616a361801f190e43a9909caead7bb6087c7
   FBSDKLoginKit: 57e37106af12c9e264e473dcb75d7decdbb07fe4
   FBSnapshotTestCase: 3dc3899168747a0319c5278f5b3445c13a6532dd
+  FLEX: ba80ea13d2c784e85e616137fd4eff164781e364
   FLKAutoLayout: 9db6b30c2008d230da608e62c607b11c23b942e6
   FODFormKit: 71e58c63b3ca279616671ab087fd721facf53a78
   FXBlurView: 5121730176fd52bcf7bffd0bd8c1485e8aabc3cb
   HockeySDK-Source: d620f330b23691017c141de6e25e5cdc8c67848c
   InterAppCommunication: 3239945b30e9dc5f91ef8be057fbcae4e3398e5c
   iRate: 18fd2d3bd7d2ab01dcd801098cc2f5cbe9f25ffb
-  ISO8601DateFormatter: ab926648eebe497f4d167c0fd083992f959f1274
+  ISO8601DateFormatter: 4551b6ce4f83185425f583b0b3feb3c7b59b942c
   JLRoutes: 5a6096ec514f105fc906f9334c90d8276fe13687
   JSBadgeView: 3861ddee41094284d9468e6d0af5107f703aaac5
   JSDecoupledAppDelegate: ec2e9480b893fa27ba3db5b12d51a6d5803c550b
@@ -305,7 +302,7 @@ SPEC CHECKSUMS:
   OHHTTPStubs: c93230597bc5c8b74bcfdb403cc8773515b8b08c
   ORKeyboardReactingApplication: 05af5ead40af968d5423d54b6a0dc050858b0e82
   ORStackView: 752d81ca2e2a0bd6c01a2ece30fd24923434be1e
-  ReactiveCocoa: fbe689fe218063b7bbed41032912c9ca4fdbe172
+  ReactiveCocoa: 81ee2fb7df2dfc6bd52b5d70473662195e20ca7d
   RSSwizzle: d561958f595028bfcef98c7d55c318b3878a61c6
   SDWebImage: 1d2b1a1efda1ade1b00b6f8498865f8ddedc8a84
   Specta: cf3e4188cf35375c3ee2cd03f8db8f1f4ef98234
